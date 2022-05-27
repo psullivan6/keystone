@@ -1,14 +1,16 @@
-// loosely based on https://github.com/ianstormtaylor/slate/blob/d22c76ae1313fe82111317417912a2670e73f5c9/site/examples/paste-html.tsx
-
-import { Descendant, Element } from 'slate';
+// very loosely based on https://github.com/ianstormtaylor/slate/blob/d22c76ae1313fe82111317417912a2670e73f5c9/site/examples/paste-html.tsx
+import { Node } from 'slate';
+import { Block, isBlock } from '..';
 import { Mark } from '../utils';
 import {
   addMarksToChildren,
-  getTextNodeForCurrentlyActiveMarks,
+  getInlineNodes,
   forceDisableMarkForChildren,
+  setLinkForChildren,
+  InlineFromExternalPaste,
 } from './utils';
 
-function getAlignmentFromElement(element: Node): 'center' | 'end' | undefined {
+function getAlignmentFromElement(element: globalThis.Element): 'center' | 'end' | undefined {
   const parent = element.parentElement;
   // confluence
   const attribute = parent?.getAttribute('data-align');
@@ -34,16 +36,10 @@ function getAlignmentFromElement(element: Node): 'center' | 'end' | undefined {
 // See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types
 type DistributiveOmit<T, K extends keyof any> = T extends any ? Omit<T, K> : never;
 
-const ELEMENT_TAGS: Record<
+const BLOCK_TAGS: Record<
   string,
-  (element: Node) => DistributiveOmit<Element, 'children'> & { children?: Descendant[] }
+  (element: globalThis.Element) => DistributiveOmit<Block, 'children'> & { children?: undefined }
 > = {
-  A: el => ({
-    type: 'link',
-    href: (el as any).getAttribute('href'),
-    // underline is on links in Google Docs
-    children: forceDisableMarkForChildren('underline', () => deserializeChildren(el.childNodes)),
-  }),
   BLOCKQUOTE: () => ({ type: 'blockquote' }),
   H1: el => ({ type: 'heading', level: 1, textAlign: getAlignmentFromElement(el) }),
   H2: el => ({ type: 'heading', level: 2, textAlign: getAlignmentFromElement(el) }),
@@ -51,22 +47,11 @@ const ELEMENT_TAGS: Record<
   H4: el => ({ type: 'heading', level: 4, textAlign: getAlignmentFromElement(el) }),
   H5: el => ({ type: 'heading', level: 5, textAlign: getAlignmentFromElement(el) }),
   H6: el => ({ type: 'heading', level: 6, textAlign: getAlignmentFromElement(el) }),
-  IMG: el => ({
-    type: 'paragraph',
-    children: [
-      {
-        text: `<img alt=${JSON.stringify(
-          (el as any).getAttribute('alt') || ''
-        )} src=${JSON.stringify((el as any).getAttribute('src') || '')}>`,
-      },
-    ],
-  }),
   LI: () => ({ type: 'list-item' }),
   OL: () => ({ type: 'ordered-list' }),
   P: el => ({ type: 'paragraph', textAlign: getAlignmentFromElement(el) }),
   PRE: () => ({ type: 'code' }),
   UL: () => ({ type: 'unordered-list' }),
-  HR: () => ({ type: 'divider', children: [{ text: '' }] }),
 };
 
 const TEXT_TAGS: Record<string, Mark> = {
@@ -83,7 +68,7 @@ const TEXT_TAGS: Record<string, Mark> = {
   KBD: 'keyboard',
 };
 
-function marksFromElementAttributes(element: Node) {
+function marksFromElementAttributes(element: globalThis.Node) {
   const marks = new Set<Mark>();
   if (element instanceof HTMLElement) {
     const style = element.style;
@@ -133,55 +118,67 @@ export function deserializeHTML(html: string) {
   return deserializeHTMLNode(parsed.body);
 }
 
-export function deserializeHTMLNode(el: Node): Descendant[] {
-  if (el.nodeType === 3) {
+export function deserializeHTMLNode(el: globalThis.Node): (InlineFromExternalPaste | Block)[] {
+  if (el instanceof globalThis.Text) {
     const text = el.textContent;
-    if (!text?.trim()) {
+    if (!text) {
       return [];
     }
-    return [getTextNodeForCurrentlyActiveMarks(text)];
+    return getInlineNodes(text);
   }
-  if (el.nodeType !== 1) {
+  if (!(el instanceof globalThis.Element)) {
     return [];
   }
   let { nodeName } = el;
   if (nodeName === 'BR') {
-    return [getTextNodeForCurrentlyActiveMarks('\n')];
+    return getInlineNodes('\n');
   }
 
   const marks = marksFromElementAttributes(el);
 
   // Dropbox Paper displays blockquotes as lists for some reason
-  if (el instanceof globalThis.Element && el.classList.contains('listtype-quote')) {
+  if (el.classList.contains('listtype-quote')) {
     marks.delete('italic');
     nodeName = 'BLOCKQUOTE';
   }
 
   return addMarksToChildren(marks, () => {
-    if (ELEMENT_TAGS[nodeName]) {
-      const attrs = ELEMENT_TAGS[nodeName](el);
-      if (attrs.children) {
-        return [attrs as any];
+    if (nodeName === 'A') {
+      const href = el.getAttribute('href');
+      if (href) {
+        return setLinkForChildren(href, () =>
+          forceDisableMarkForChildren('underline', () => deserializeChildren(el.childNodes))
+        );
       }
-      let children = deserializeChildren(el.childNodes);
-
-      return [{ ...attrs, children: children }];
     }
 
+    if (nodeName === 'HR') {
+      return [{ type: 'divider', children: [{ text: '' }] }];
+    }
+
+    if (BLOCK_TAGS[nodeName]) {
+      const node = BLOCK_TAGS[nodeName](el);
+      return [{ ...node, children: deserializeChildren(el.childNodes) }];
+    }
     return deserializeChildren(el.childNodes);
   });
 }
 
-function deserializeChildren(nodes: Iterable<Node>) {
-  const outputNodes: Descendant[] = [];
+function deserializeChildren(nodes: Iterable<globalThis.Node>) {
+  const outputNodes: (InlineFromExternalPaste | Block)[] = [];
   for (const node of nodes) {
-    const result = deserializeHTMLNode(node);
-    if (result.length) {
-      outputNodes.push(...result);
-    }
+    outputNodes.push(...deserializeHTMLNode(node));
   }
   if (!outputNodes.length) {
-    outputNodes.push({ text: '' });
+    // Slate also gets unhappy if an element has no children
+    // the empty text nodes will get normalized away if they're not needed
+    return [{ text: '' }];
+  }
+  if (outputNodes.some(isBlock)) {
+    // we want to ignore whitespace between block level elements
+    // useful info about whitespace in html:
+    // https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace
+    return outputNodes.filter(node => isBlock(node) || Node.string(node).trim() !== '');
   }
   return outputNodes;
 }
