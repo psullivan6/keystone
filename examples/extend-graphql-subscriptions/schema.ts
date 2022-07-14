@@ -1,0 +1,34 @@
+import { list } from '@keystone-6/core';
+import { select, relationship, text, timestamp, password } from '@keystone-6/core/fields';
+
+export const lists = {
+  Post: list({
+    access: {
+      operation: {
+        query: ({ session }) => !!session.itemId,
+        update: ({ session }) => !!session.itemId,
+      },
+    },
+    fields: {
+      title: text({ validation: { isRequired: true } }),
+      status: select({
+        type: 'enum',
+        options: [
+          { label: 'Draft', value: 'draft' },
+          { label: 'Published', value: 'published' },
+        ],
+      }),
+      content: text(),
+      publishDate: timestamp(),
+      author: relationship({ ref: 'Author.posts', many: false }),
+    },
+  }),
+  Author: list({
+    fields: {
+      name: text({ validation: { isRequired: true } }),
+      email: text({ isIndexed: 'unique', validation: { isRequired: true } }),
+      posts: relationship({ ref: 'Post.author', many: true }),
+      password: password(),
+    },
+  }),
+};

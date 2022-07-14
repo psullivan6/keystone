@@ -1,0 +1,26 @@
+{
+  "name": "@keystone-6/example-extend-graphql-subscriptions",
+  "version": "0.0.3",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "keystone dev",
+    "start": "keystone start",
+    "build": "keystone build"
+  },
+  "dependencies": {
+    "@keystone-6/auth": "^4.0.0",
+    "@keystone-6/core": "^2.1.0",
+    "@types/ws": "^8.5.3",
+    "graphql-subscriptions": "^2.0.0",
+    "graphql-ws": "^5.9.1",
+    "ws": "^8.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.4"
+  },
+  "engines": {
+    "node": "^14.15 || ^16.13"
+  },
+  "repository": "https://github.com/keystonejs/keystone/tree/main/examples/extend-graphql-subscriptions"
+}
