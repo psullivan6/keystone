@@ -629,7 +629,7 @@ function useRelationshipFilterValues({ value, list }: { value: string; list: Sch
   const foreignIds = getForeignIds(value);
   const where = { id: { in: foreignIds } };
   if (list.kind === 'singleton') {
-    throw new Error('Singleton bad');
+    throw new Error(`Singleton "${list.key}" is attempting to be accessed as a list`);
   }
   const query = gql`
     query FOREIGNLIST_QUERY($where: ${list.gqlNames.whereInputName}!) {

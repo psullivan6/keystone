@@ -113,7 +113,7 @@ function getLazyMetadataQuery(
     const getListByKey = (name: string) => {
       let l = adminMeta.lists.find(({ key }) => key === name);
       if (!l || l.__typename === 'KeystoneAdminUISingletonMeta') {
-        throw new Error('singleton bad');
+        throw new Error(`Singleton "${l?.key}" is attempting to be accessed as a list`);
       }
 
       return l;

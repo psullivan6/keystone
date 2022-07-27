@@ -162,7 +162,7 @@ export const useSchema = (key: string) => {
 export const useList = (key: string) => {
   const list = useSchema(key);
   if (list.kind === 'singleton') {
-    throw new Error('singleton bad');
+    throw new Error(`Singleton "${key}" is attempting to be accessed as a list`);
   }
   return list;
 };

@@ -128,7 +128,7 @@ export const RelationshipSelect = ({
   extraSelection?: string;
 }) => {
   if (list.kind === 'singleton') {
-    throw new Error('singleton bad');
+    throw new Error(`Singleton "${list.key}" is attempting to be accessed as a list`);
   }
 
   const [search, setSearch] = useState('');
