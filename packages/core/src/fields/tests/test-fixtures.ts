@@ -93,7 +93,7 @@ export const filterTests = (withKeystone: any) => {
   );
 
   test(
-    'Filter: in - empty list',
+    'Filter: in - empty model',
     withKeystone(({ context }: { context: KeystoneContext }) => {
       return match(context, { id: { in: [] } }, []);
     })
@@ -121,7 +121,7 @@ export const filterTests = (withKeystone: any) => {
   );
 
   test(
-    'Filter: not in - empty list',
+    'Filter: not in - empty model',
     withKeystone(async ({ context }: { context: KeystoneContext }) => {
       const IDs = await getIDs(context);
       return match(context, { id: { not: { in: [] } } }, [

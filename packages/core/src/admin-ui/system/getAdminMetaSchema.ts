@@ -259,8 +259,8 @@ export function getAdminMetaSchema({
     },
   });
 
-  const KeystoneAdminUIListMeta = graphql.object<ModelMetaRootVal>()({
-    name: 'KeystoneAdminUIListMeta',
+  const KeystoneAdminUIModelMeta = graphql.object<ModelMetaRootVal>()({
+    name: 'KeystoneAdminUIModelMeta',
     fields: {
       key: graphql.field({ type: graphql.nonNull(graphql.String) }),
       itemQueryName: graphql.field({
@@ -274,7 +274,7 @@ export function getAdminMetaSchema({
         resolve(rootVal, args, context) {
           if ('isAdminUIBuildProcess' in context) {
             throw new Error(
-              'KeystoneAdminUIListMeta.hideCreate cannot be resolved during the build process'
+              'KeystoneAdminUIModelMeta.hideCreate cannot be resolved during the build process'
             );
           }
           const listConfig = config.models[rootVal.key];
@@ -289,7 +289,7 @@ export function getAdminMetaSchema({
         resolve(rootVal, args, context) {
           if ('isAdminUIBuildProcess' in context) {
             throw new Error(
-              'KeystoneAdminUIListMeta.hideDelete cannot be resolved during the build process'
+              'KeystoneAdminUIModelMeta.hideDelete cannot be resolved during the build process'
             );
           }
           const listConfig = config.models[rootVal.key];
@@ -318,7 +318,7 @@ export function getAdminMetaSchema({
         resolve(rootVal, args, context) {
           if ('isAdminUIBuildProcess' in context) {
             throw new Error(
-              'KeystoneAdminUIListMeta.isHidden cannot be resolved during the build process'
+              'KeystoneAdminUIModelMeta.isHidden cannot be resolved during the build process'
             );
           }
           const listConfig = config.models[rootVal.key];
@@ -341,10 +341,10 @@ export function getAdminMetaSchema({
         type: graphql.nonNull(graphql.Boolean),
       }),
       models: graphql.field({
-        type: graphql.nonNull(graphql.list(graphql.nonNull(KeystoneAdminUIListMeta))),
+        type: graphql.nonNull(graphql.list(graphql.nonNull(KeystoneAdminUIModelMeta))),
       }),
       model: graphql.field({
-        type: KeystoneAdminUIListMeta,
+        type: KeystoneAdminUIModelMeta,
         args: {
           key: graphql.arg({
             type: graphql.nonNull(graphql.String),

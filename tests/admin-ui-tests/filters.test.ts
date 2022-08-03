@@ -22,7 +22,7 @@ adminUITests('./tests/test-projects/basic', browserType => {
       });
       await deleteAllData('./tests/test-projects/basic');
     });
-    test('Lists are filterable by relationships', async () => {
+    test('Models are filterable by relationships', async () => {
       const gql = String.raw;
       const TASK_MUTATION_CREATE = gql`
         mutation TASK_MUTATION_CREATE($name: String!, $assignedTo: String!) {

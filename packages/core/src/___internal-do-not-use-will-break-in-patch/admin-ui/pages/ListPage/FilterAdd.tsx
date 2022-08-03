@@ -63,7 +63,7 @@ export function FilterAdd({
         onClick={() => setOpen(!isOpen)}
       >
         <Box as="span" marginRight="xsmall">
-          Filter Model
+          Filter List
         </Box>
         <ChevronDownIcon size="small" />
       </Button>

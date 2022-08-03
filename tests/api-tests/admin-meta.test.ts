@@ -41,7 +41,7 @@ test(
           enableSignout: false,
           models: [
             {
-              __typename: 'KeystoneAdminUIListMeta',
+              __typename: 'KeystoneAdminUIModelMeta',
               description: null,
               fields: [
                 {
