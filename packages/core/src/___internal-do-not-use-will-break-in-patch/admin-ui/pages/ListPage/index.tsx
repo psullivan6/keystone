@@ -295,8 +295,7 @@ const ModelPage = ({ modelKey }: ListPageProps) => {
                         singular={model.singular}
                         total={data.count}
                       />
-                      , sorted by{' '}
-                      <SortSelection list={model} orderableFields={orderableFields} />
+                      , sorted by <SortSelection list={model} orderableFields={orderableFields} />
                       with{' '}
                       <FieldSelection
                         model={model}

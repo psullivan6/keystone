@@ -111,15 +111,14 @@ export function getAdminMetaSchema({
                     );
                   }
                   if (
-                    !models[rootVal.modelKey].fields[rootVal.fieldPath].graphql.isEnabled
-                      .create
+                    !models[rootVal.modelKey].fields[rootVal.fieldPath].graphql.isEnabled.create
                   ) {
                     return 'hidden';
                   }
                   const modelConfig = config.models[rootVal.modelKey];
                   const sessionFunction =
-                    models[rootVal.modelKey].fields[rootVal.fieldPath].ui?.createView
-                      ?.fieldMode ?? modelConfig.ui?.createView?.defaultFieldMode;
+                    models[rootVal.modelKey].fields[rootVal.fieldPath].ui?.createView?.fieldMode ??
+                    modelConfig.ui?.createView?.defaultFieldMode;
                   return runMaybeFunction(sessionFunction, 'edit', {
                     session: context.session,
                     context,
@@ -151,16 +150,13 @@ export function getAdminMetaSchema({
                       'KeystoneAdminUIFieldMetaListView.fieldMode cannot be resolved during the build process'
                     );
                   }
-                  if (
-                    !models[rootVal.modelKey].fields[rootVal.fieldPath].graphql.isEnabled
-                      .read
-                  ) {
+                  if (!models[rootVal.modelKey].fields[rootVal.fieldPath].graphql.isEnabled.read) {
                     return 'hidden';
                   }
                   const listConfig = config.models[rootVal.modelKey];
                   const sessionFunction =
-                    models[rootVal.modelKey].fields[rootVal.fieldPath].ui?.listView
-                      ?.fieldMode ?? listConfig.ui?.listView?.defaultFieldMode;
+                    models[rootVal.modelKey].fields[rootVal.fieldPath].ui?.listView?.fieldMode ??
+                    listConfig.ui?.listView?.defaultFieldMode;
                   return runMaybeFunction(sessionFunction, 'read', {
                     session: context.session,
                     context,
@@ -198,21 +194,17 @@ export function getAdminMetaSchema({
                     'KeystoneAdminUIFieldMetaItemView.fieldMode cannot be resolved during the build process if an id is provided'
                   );
                 }
-                if (
-                  !models[rootVal.modelKey].fields[rootVal.fieldPath].graphql.isEnabled.read
-                ) {
+                if (!models[rootVal.modelKey].fields[rootVal.fieldPath].graphql.isEnabled.read) {
                   return 'hidden';
                 } else if (
-                  !models[rootVal.modelKey].fields[rootVal.fieldPath].graphql.isEnabled
-                    .update
+                  !models[rootVal.modelKey].fields[rootVal.fieldPath].graphql.isEnabled.update
                 ) {
                   return 'read';
                 }
                 const modelConfig = config.models[rootVal.modelKey];
 
                 const sessionFunction =
-                  models[rootVal.modelKey].fields[rootVal.fieldPath].ui?.itemView
-                    ?.fieldMode ??
+                  models[rootVal.modelKey].fields[rootVal.fieldPath].ui?.itemView?.fieldMode ??
                   modelConfig.ui?.itemView?.defaultFieldMode ??
                   'edit';
                 if (typeof sessionFunction === 'string') {

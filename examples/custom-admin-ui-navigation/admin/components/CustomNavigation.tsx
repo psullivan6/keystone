@@ -1,10 +1,6 @@
 import React from 'react';
 
-import {
-  ModelNavItems,
-  NavigationContainer,
-  NavItem,
-} from '@keystone-6/core/admin-ui/components';
+import { ModelNavItems, NavigationContainer, NavItem } from '@keystone-6/core/admin-ui/components';
 
 import type { NavigationProps } from '@keystone-6/core/admin-ui/components';
 

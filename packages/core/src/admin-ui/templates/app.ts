@@ -110,8 +110,7 @@ function getLazyMetadataQuery(
 
   const queryType = graphqlSchema.getQueryType();
   if (queryType) {
-    const getModelByKey = (name: string) =>
-      adminMeta.models.find(({ key }: any) => key === name);
+    const getModelByKey = (name: string) => adminMeta.models.find(({ key }: any) => key === name);
     const fields = queryType.getFields();
     if (fields['authenticatedItem'] !== undefined) {
       const authenticatedItemType = fields['authenticatedItem'].type;

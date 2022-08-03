@@ -420,8 +420,8 @@ export function Cards({
       {/* TODO: this may not be visible to the user when they invoke the save action. Maybe scroll to it? */}
       {forceValidation && (
         <Text color="red600" size="small">
-          You must finish creating and editing any related {foreignModel.label.toLowerCase()}{' '}
-          before saving the {localModel.singular.toLowerCase()}
+          You must finish creating and editing any related {foreignModel.label.toLowerCase()} before
+          saving the {localModel.singular.toLowerCase()}
         </Text>
       )}
     </Stack>

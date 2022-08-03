@@ -42,29 +42,28 @@ type AddFieldPathArgToAllPropsOnObj<T extends Record<string, (arg: any) => any>>
   [Key in keyof T]: AddFieldPathToObj<T[Key]>;
 };
 
-export type FieldHooks<ModelTypeInfo extends BaseModelTypeInfo> =
-  AddFieldPathArgToAllPropsOnObj<{
-    /**
-     * Used to **modify the input** for create and update operations after default values and access control have been applied
-     */
-    resolveInput?: ResolveInputFieldHook<ModelTypeInfo>;
-    /**
-     * Used to **validate the input** for create and update operations once all resolveInput hooks resolved
-     */
-    validateInput?: ValidateInputHook<ModelTypeInfo>;
-    /**
-     * Used to **validate** that a delete operation can happen after access control has occurred
-     */
-    validateDelete?: ValidateDeleteHook<ModelTypeInfo>;
-    /**
-     * Used to **cause side effects** before a create, update, or delete operation once all validateInput hooks have resolved
-     */
-    beforeOperation?: BeforeOperationHook<ModelTypeInfo>;
-    /**
-     * Used to **cause side effects** after a create, update, or delete operation operation has occurred
-     */
-    afterOperation?: AfterOperationHook<ModelTypeInfo>;
-  }>;
+export type FieldHooks<ModelTypeInfo extends BaseModelTypeInfo> = AddFieldPathArgToAllPropsOnObj<{
+  /**
+   * Used to **modify the input** for create and update operations after default values and access control have been applied
+   */
+  resolveInput?: ResolveInputFieldHook<ModelTypeInfo>;
+  /**
+   * Used to **validate the input** for create and update operations once all resolveInput hooks resolved
+   */
+  validateInput?: ValidateInputHook<ModelTypeInfo>;
+  /**
+   * Used to **validate** that a delete operation can happen after access control has occurred
+   */
+  validateDelete?: ValidateDeleteHook<ModelTypeInfo>;
+  /**
+   * Used to **cause side effects** before a create, update, or delete operation once all validateInput hooks have resolved
+   */
+  beforeOperation?: BeforeOperationHook<ModelTypeInfo>;
+  /**
+   * Used to **cause side effects** after a create, update, or delete operation operation has occurred
+   */
+  afterOperation?: AfterOperationHook<ModelTypeInfo>;
+}>;
 
 type ArgsForCreateOrUpdateOperation<ModelTypeInfo extends BaseModelTypeInfo> =
   | {
@@ -167,10 +166,7 @@ type AfterOperationHook<ModelTypeInfo extends BaseModelTypeInfo> = (
         resolvedData: undefined;
       }
   ) &
-    (
-      | { operation: 'delete' }
-      | { operation: 'create' | 'update'; item: ModelTypeInfo['item'] }
-    ) &
+    ({ operation: 'delete' } | { operation: 'create' | 'update'; item: ModelTypeInfo['item'] }) &
     (
       | // technically this will never actually exist for a create
       // but making it optional rather than not here

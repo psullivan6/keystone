@@ -14,9 +14,7 @@ type _CreateValueType = Exclude<
 type _UpdateValueType = Exclude<
   graphql.InferValueFromArg<
     graphql.Arg<
-      graphql.NonNullType<
-        Exclude<GraphQLTypesForModel['relateTo']['one']['update'], undefined>
-      >
+      graphql.NonNullType<Exclude<GraphQLTypesForModel['relateTo']['one']['update'], undefined>>
     >
   >,
   null | undefined

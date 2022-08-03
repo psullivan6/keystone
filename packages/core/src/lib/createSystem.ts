@@ -92,10 +92,7 @@ export function createSystem(config: KeystoneConfig, isLiveReload?: boolean) {
         config,
         prismaClient,
         gqlNamesByModel: Object.fromEntries(
-          Object.entries(models).map(([modelKey, model]) => [
-            modelKey,
-            getGqlNames(model),
-          ])
+          Object.entries(models).map(([modelKey, model]) => [modelKey, getGqlNames(model)])
         ),
         models,
       });

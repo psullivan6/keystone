@@ -112,9 +112,7 @@ export const document =
         assertValidComponentSchema({ kind: 'object', fields: block.schema }, lists);
       } catch (err) {
         throw new Error(
-          `Component block ${name} in ${meta.modelKey}.${meta.fieldKey}: ${
-            (err as any).message
-          }`
+          `Component block ${name} in ${meta.modelKey}.${meta.fieldKey}: ${(err as any).message}`
         );
       }
     }

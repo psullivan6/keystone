@@ -118,10 +118,7 @@ export function createAdminMeta(
 
     for (const [fieldKey, field] of Object.entries(model.fields)) {
       // If the field is a relationship field and is related to an omitted model, skip.
-      if (
-        field.dbField.kind === 'relation' &&
-        omittedModels.includes(field.dbField.model)
-      ) {
+      if (field.dbField.kind === 'relation' && omittedModels.includes(field.dbField.model)) {
         continue;
       }
       // FIXME: Disabling this entirely for now until the Admin UI can properly

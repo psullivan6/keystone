@@ -63,10 +63,7 @@ type Match = (
   expectedIndexes: readonly number[]
 ) => void;
 
-export function filterTests(
-  field: FieldTypeFunc<BaseModelTypeInfo>,
-  cb: (match: Match) => void
-) {
+export function filterTests(field: FieldTypeFunc<BaseModelTypeInfo>, cb: (match: Match) => void) {
   for (const kind of ['without negation', 'with negation'] as const) {
     describe(kind, () => {
       const match: Match = (inputValues, where, expectedIndexes) =>

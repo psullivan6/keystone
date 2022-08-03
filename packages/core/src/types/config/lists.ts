@@ -6,10 +6,7 @@ import type { ModelHooks } from './hooks';
 import type { ModelAccessControl } from './access-control';
 import type { BaseFields, FilterOrderArgs } from './fields';
 
-export type ModelsConfig = Record<
-  string,
-  ModelConfig<any, BaseFields<BaseModelTypeInfo>>
->;
+export type ModelsConfig = Record<string, ModelConfig<any, BaseFields<BaseModelTypeInfo>>>;
 
 export type IdFieldConfig =
   | { kind: 'cuid' | 'uuid' }
@@ -60,12 +57,8 @@ export type ModelConfig<
   description?: string; // defaults both { adminUI: { description }, graphQL: { description } }
 
   // Defaults to apply to all fields.
-  defaultIsFilterable?:
-    | false
-    | ((args: FilterOrderArgs<ModelTypeInfo>) => MaybePromise<boolean>); // The default value to use for graphql.isEnabled.filter on all fields for this model
-  defaultIsOrderable?:
-    | false
-    | ((args: FilterOrderArgs<ModelTypeInfo>) => MaybePromise<boolean>); // The default value to use for graphql.isEnabled.orderBy on all fields for this model
+  defaultIsFilterable?: false | ((args: FilterOrderArgs<ModelTypeInfo>) => MaybePromise<boolean>); // The default value to use for graphql.isEnabled.filter on all fields for this model
+  defaultIsOrderable?: false | ((args: FilterOrderArgs<ModelTypeInfo>) => MaybePromise<boolean>); // The default value to use for graphql.isEnabled.orderBy on all fields for this model
 };
 
 export type ModelAdminUIConfig<

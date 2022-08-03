@@ -3,12 +3,7 @@ import bcryptjs from 'bcryptjs';
 import dumbPasswords from 'dumb-passwords';
 import { userInputError } from '../../../lib/core/graphql-errors';
 import { humanize } from '../../../lib/utils';
-import {
-  BaseModelTypeInfo,
-  fieldType,
-  FieldTypeFunc,
-  CommonFieldConfig,
-} from '../../../types';
+import { BaseModelTypeInfo, fieldType, FieldTypeFunc, CommonFieldConfig } from '../../../types';
 import { graphql } from '../../..';
 import { resolveView } from '../../resolve-view';
 import { getResolvedIsNullable } from '../../non-null-graphql';

@@ -119,10 +119,7 @@ export const HomePage = () => {
         }
       }
       ${Object.entries(models)
-        .map(
-          ([modelKey, model]) =>
-            `${modelKey}: ${model.gqlNames.modelQueryCountName}`
-        )
+        .map(([modelKey, model]) => `${modelKey}: ${model.gqlNames.modelQueryCountName}`)
         .join('\n')}
     }`,
     [models]
@@ -172,9 +169,8 @@ export const HomePage = () => {
                       : { type: 'loading' }
                   }
                   hideCreate={
-                    data?.keystone.adminMeta.models.find(
-                      (model: any) => model.key === key
-                    )?.hideCreate ?? false
+                    data?.keystone.adminMeta.models.find((model: any) => model.key === key)
+                      ?.hideCreate ?? false
                   }
                   key={key}
                   modelKey={key}

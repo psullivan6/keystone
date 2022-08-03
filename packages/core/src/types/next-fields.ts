@@ -412,9 +412,7 @@ export type GraphQLTypesForModel = {
         connect: graphql.Arg<
           graphql.ListType<graphql.NonNullType<GraphQLTypesForModel['uniqueWhere']>>
         >;
-        create?: graphql.Arg<
-          graphql.ListType<graphql.NonNullType<GraphQLTypesForModel['create']>>
-        >;
+        create?: graphql.Arg<graphql.ListType<graphql.NonNullType<GraphQLTypesForModel['create']>>>;
       }>;
       update?: graphql.InputObjectType<{
         disconnect: graphql.Arg<
@@ -426,9 +424,7 @@ export type GraphQLTypesForModel = {
         connect: graphql.Arg<
           graphql.ListType<graphql.NonNullType<GraphQLTypesForModel['uniqueWhere']>>
         >;
-        create?: graphql.Arg<
-          graphql.ListType<graphql.NonNullType<GraphQLTypesForModel['create']>>
-        >;
+        create?: graphql.Arg<graphql.ListType<graphql.NonNullType<GraphQLTypesForModel['create']>>>;
       }>;
     };
     one: {
@@ -458,10 +454,9 @@ export type FindManyArgs = {
 export type FindManyArgsValue = graphql.InferValueFromArgs<FindManyArgs>;
 
 // fieldType(dbField)(fieldInfo) => { ...fieldInfo, dbField };
-export function fieldType<
-  TDBField extends DBField,
-  ModelTypeInfo extends BaseModelTypeInfo
->(dbField: TDBField) {
+export function fieldType<TDBField extends DBField, ModelTypeInfo extends BaseModelTypeInfo>(
+  dbField: TDBField
+) {
   return function <
     CreateArg extends graphql.Arg<graphql.InputType> | undefined,
     UpdateArg extends graphql.Arg<graphql.InputType>,

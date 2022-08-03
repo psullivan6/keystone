@@ -328,9 +328,7 @@ async function getResolvedData(
     try {
       resolvedData = (await model.hooks.resolveInput({ ...hookArgs, resolvedData })) as any;
     } catch (error: any) {
-      throw extensionError(hookName, [
-        { error, tag: `${model.modelKey}.hooks.${hookName}` },
-      ]);
+      throw extensionError(hookName, [{ error, tag: `${model.modelKey}.hooks.${hookName}` }]);
     }
   }
 

@@ -185,8 +185,7 @@ export const ModelItem = ({ model }: { model: ModelMeta }) => {
 type NavItemsProps = Pick<NavigationProps, 'models'> & { include?: string[] };
 
 export const ModelNavItems = ({ models = [], include = [] }: NavItemsProps) => {
-  const renderedModels =
-    include.length > 0 ? models.filter(i => include.includes(i.key)) : models;
+  const renderedModels = include.length > 0 ? models.filter(i => include.includes(i.key)) : models;
 
   return (
     <Fragment>

@@ -140,9 +140,7 @@ function getModelsWithInitialisedFields(
         fields: Object.fromEntries(
           Object.entries(model.fields).map(([fieldKey, fieldFunc]) => {
             if (typeof fieldFunc !== 'function') {
-              throw new Error(
-                `The field at ${modelKey}.${fieldKey} does not provide a function`
-              );
+              throw new Error(`The field at ${modelKey}.${fieldKey} does not provide a function`);
             }
             const f = fieldFunc({
               fieldKey,
@@ -168,11 +166,9 @@ function getModelsWithInitialisedFields(
               // Filter and orderBy can be defaulted at the model level, otherwise they
               // default to `false` if no value was set at the model level.
               filter:
-                read &&
-                (f.isFilterable ?? intermediateModels[modelKey].graphql.isEnabled.filter),
+                read && (f.isFilterable ?? intermediateModels[modelKey].graphql.isEnabled.filter),
               orderBy:
-                read &&
-                (f.isOrderable ?? intermediateModels[modelKey].graphql.isEnabled.orderBy),
+                read && (f.isOrderable ?? intermediateModels[modelKey].graphql.isEnabled.orderBy),
             };
             const field = {
               ...f,
@@ -458,11 +454,7 @@ export function initialiseModels(config: KeystoneConfig): Record<string, Initial
   const modelsRef: Record<string, InitialisedModel> = {};
 
   {
-    const modelGraphqlTypes = getModelGraphqlTypes(
-      modelsConfig,
-      modelsRef,
-      intermediateModels
-    );
+    const modelGraphqlTypes = getModelGraphqlTypes(modelsConfig, modelsRef, intermediateModels);
     intermediateModels = getModelsWithInitialisedFields(
       config,
       modelGraphqlTypes,

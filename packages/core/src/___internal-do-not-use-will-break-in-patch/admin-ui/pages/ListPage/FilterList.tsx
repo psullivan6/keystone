@@ -9,13 +9,7 @@ import { FieldMeta, ModelMeta } from '../../../../types';
 import { useRouter } from '../../../../admin-ui/router';
 import { Filter } from './useFilters';
 
-export function FilterModel({
-  filters,
-  model,
-}: {
-  filters: Filter[];
-  model: ModelMeta;
-}) {
+export function FilterModel({ filters, model }: { filters: Filter[]; model: ModelMeta }) {
   return (
     <Inline gap="small">
       {filters.map(filter => {

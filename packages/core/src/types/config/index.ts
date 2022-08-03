@@ -119,13 +119,7 @@ export type KeystoneConfig<TypeInfo extends BaseKeystoneTypeInfo = BaseKeystoneT
 
 // config.models
 
-export type {
-  ModelsConfig,
-  ModelConfig,
-  BaseFields,
-  MaybeSessionFunction,
-  MaybeItemFunction,
-};
+export type { ModelsConfig, ModelConfig, BaseFields, MaybeSessionFunction, MaybeItemFunction };
 
 // config.db
 
