@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { ListMeta } from '../../../../types';
+import { ModelMeta } from '../../../../types';
 import { useRouter } from '../../../../admin-ui/router';
 
 export function useSelectedFields(
-  list: ListMeta,
+  list: ModelMeta,
   fieldModesByFieldPath: Record<string, 'hidden' | 'read'>
 ): ReadonlySet<string> {
   const { query } = useRouter();

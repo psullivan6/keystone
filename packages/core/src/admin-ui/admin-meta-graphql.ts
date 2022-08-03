@@ -9,11 +9,11 @@ export const staticAdminMetaQuery = gql`
         __typename
         enableSignout
         enableSessionItem
-        lists {
+        models {
           __typename
           key
           itemQueryName
-          listQueryName
+          modelQueryName
           initialSort {
             __typename
             field
@@ -70,11 +70,11 @@ export type StaticAdminMetaQuery = {
       __typename: 'KeystoneAdminMeta';
       enableSignout: boolean;
       enableSessionItem: boolean;
-      lists: Array<{
-        __typename: 'KeystoneAdminUIListMeta';
+      models: Array<{
+        __typename: 'KeystoneAdminUIModelMeta';
         key: string;
         itemQueryName: string;
-        listQueryName: string;
+        modelQueryName: string;
         path: string;
         label: string;
         singular: string;

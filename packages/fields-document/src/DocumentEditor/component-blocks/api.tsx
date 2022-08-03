@@ -104,7 +104,7 @@ export type ArrayField<ElementField extends ComponentSchema> = {
 
 export type RelationshipField<Many extends boolean> = {
   kind: 'relationship';
-  listKey: string;
+  modelKey: string;
   selection: string | undefined;
   label: string;
   many: Many;
@@ -411,12 +411,12 @@ export const fields = {
     };
   },
   relationship<Many extends boolean | undefined = false>({
-    listKey,
+    modelKey: listKey,
     selection,
     label,
     many,
   }: {
-    listKey: string;
+    modelKey: string;
     label: string;
     selection?: string;
   } & (Many extends undefined | false ? { many?: Many } : { many: Many })): RelationshipField<
@@ -424,7 +424,7 @@ export const fields = {
   > {
     return {
       kind: 'relationship',
-      listKey,
+      modelKey: listKey,
       selection,
       label,
       many: (many ? true : false) as any,

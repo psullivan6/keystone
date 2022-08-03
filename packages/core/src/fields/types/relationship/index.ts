@@ -1,5 +1,5 @@
 import {
-  BaseListTypeInfo,
+  BaseModelTypeInfo,
   FieldTypeFunc,
   CommonFieldConfig,
   fieldType,
@@ -14,8 +14,8 @@ type SelectDisplayConfig = {
     // Sets the relationship to display as a Select field
     displayMode?: 'select';
     /**
-     * The path of the field to use from the related list for item labels in the select.
-     * Defaults to the labelField configured on the related list.
+     * The path of the field to use from the related model for item labels in the select.
+     * Defaults to the labelField configured on the related model.
      */
     labelField?: string;
   };
@@ -23,7 +23,7 @@ type SelectDisplayConfig = {
 
 type CardsDisplayConfig = {
   ui?: {
-    // Sets the relationship to display as a list of Cards
+    // Sets the relationship to display as a model of Cards
     displayMode: 'cards';
     /* The set of fields to render in the default Card component **/
     cardFields: readonly string[];
@@ -66,8 +66,8 @@ type ManyDbConfig = {
   };
 };
 
-export type RelationshipFieldConfig<ListTypeInfo extends BaseListTypeInfo> =
-  CommonFieldConfig<ListTypeInfo> & {
+export type RelationshipFieldConfig<ModelTypeInfo extends BaseModelTypeInfo> =
+  CommonFieldConfig<ModelTypeInfo> & {
     many?: boolean;
     ref: string;
     ui?: {
@@ -77,22 +77,22 @@ export type RelationshipFieldConfig<ListTypeInfo extends BaseListTypeInfo> =
     (SelectDisplayConfig | CardsDisplayConfig | CountDisplayConfig);
 
 export const relationship =
-  <ListTypeInfo extends BaseListTypeInfo>({
+  <ModelTypeInfo extends BaseModelTypeInfo>({
     ref,
     ...config
-  }: RelationshipFieldConfig<ListTypeInfo>): FieldTypeFunc<ListTypeInfo> =>
+  }: RelationshipFieldConfig<ModelTypeInfo>): FieldTypeFunc<ModelTypeInfo> =>
   meta => {
     const { many = false } = config;
-    const [foreignListKey, foreignFieldKey] = ref.split('.');
+    const [foreignmodelKey, foreignFieldKey] = ref.split('.');
     const commonConfig = {
       ...config,
       views: resolveView('relationship/views'),
       getAdminMeta: (
         adminMetaRoot: AdminMetaRootVal
       ): Parameters<typeof import('./views').controller>[0]['fieldMeta'] => {
-        if (!meta.lists[foreignListKey]) {
+        if (!meta.models[foreignmodelKey]) {
           throw new Error(
-            `The ref [${ref}] on relationship [${meta.listKey}.${meta.fieldKey}] is invalid`
+            `The ref [${ref}] on relationship [${meta.modelKey}.${meta.fieldKey}] is invalid`
           );
         }
         if (config.ui?.displayMode === 'cards') {
@@ -100,12 +100,12 @@ export const relationship =
           // in newer versions of keystone, it will be there and it will not be there for older versions of keystone.
           // this is so that relationship fields doesn't break in confusing ways
           // if people are using a slightly older version of keystone
-          const currentField = adminMetaRoot.listsByKey[meta.listKey].fields.find(
+          const currentField = adminMetaRoot.modelByKey[meta.modelKey].fields.find(
             x => x.path === meta.fieldKey
           );
           if (currentField) {
             const allForeignFields = new Set(
-              adminMetaRoot.listsByKey[foreignListKey].fields.map(x => x.path)
+              adminMetaRoot.modelByKey[foreignmodelKey].fields.map(x => x.path)
             );
             for (const [configOption, foreignFields] of [
               ['ui.cardFields', config.ui.cardFields],
@@ -115,7 +115,7 @@ export const relationship =
               for (const foreignField of foreignFields) {
                 if (!allForeignFields.has(foreignField)) {
                   throw new Error(
-                    `The ${configOption} option on the relationship field at ${meta.listKey}.${meta.fieldKey} includes the "${foreignField}" field but that field does not exist on the "${foreignListKey}" list`
+                    `The ${configOption} option on the relationship field at ${meta.modelKey}.${meta.fieldKey} includes the "${foreignField}" field but that field does not exist on the "${foreignmodelKey}" model`
                   );
                 }
               }
@@ -124,7 +124,7 @@ export const relationship =
         }
         return {
           refFieldKey: foreignFieldKey,
-          refListKey: foreignListKey,
+          refmodelKey: foreignmodelKey,
           many,
           hideCreate: config.ui?.hideCreate ?? false,
           ...(config.ui?.displayMode === 'cards'
@@ -136,55 +136,55 @@ export const relationship =
                 inlineCreate: config.ui.inlineCreate ?? null,
                 inlineEdit: config.ui.inlineEdit ?? null,
                 inlineConnect: config.ui.inlineConnect ?? false,
-                refLabelField: adminMetaRoot.listsByKey[foreignListKey].labelField,
+                refLabelField: adminMetaRoot.modelByKey[foreignmodelKey].labelField,
               }
             : config.ui?.displayMode === 'count'
             ? { displayMode: 'count' }
             : {
                 displayMode: 'select',
-                refLabelField: adminMetaRoot.listsByKey[foreignListKey].labelField,
+                refLabelField: adminMetaRoot.modelByKey[foreignmodelKey].labelField,
               }),
         };
       },
     };
-    if (!meta.lists[foreignListKey]) {
+    if (!meta.models[foreignmodelKey]) {
       throw new Error(
-        `Unable to resolve related list '${foreignListKey}' from ${meta.listKey}.${meta.fieldKey}`
+        `Unable to resolve related model '${foreignmodelKey}' from ${meta.modelKey}.${meta.fieldKey}`
       );
     }
-    const listTypes = meta.lists[foreignListKey].types;
+    const modelTypes = meta.models[foreignmodelKey].types;
     if (config.many) {
       return fieldType({
         kind: 'relation',
         mode: 'many',
-        list: foreignListKey,
+        model: foreignmodelKey,
         field: foreignFieldKey,
         relationName: config.db?.relationName,
       })({
         ...commonConfig,
         input: {
           where: {
-            arg: graphql.arg({ type: listTypes.relateTo.many.where }),
+            arg: graphql.arg({ type: modelTypes.relateTo.many.where }),
             resolve(value, context, resolve) {
               return resolve(value);
             },
           },
-          create: listTypes.relateTo.many.create && {
-            arg: graphql.arg({ type: listTypes.relateTo.many.create }),
+          create: modelTypes.relateTo.many.create && {
+            arg: graphql.arg({ type: modelTypes.relateTo.many.create }),
             async resolve(value, context, resolve) {
               return resolve(value);
             },
           },
-          update: listTypes.relateTo.many.update && {
-            arg: graphql.arg({ type: listTypes.relateTo.many.update }),
+          update: modelTypes.relateTo.many.update && {
+            arg: graphql.arg({ type: modelTypes.relateTo.many.update }),
             async resolve(value, context, resolve) {
               return resolve(value);
             },
           },
         },
         output: graphql.field({
-          args: listTypes.findManyArgs,
-          type: graphql.list(graphql.nonNull(listTypes.output)),
+          args: modelTypes.findManyArgs,
+          type: graphql.list(graphql.nonNull(modelTypes.output)),
           resolve({ value }, args) {
             return value.findMany(args);
           },
@@ -193,7 +193,7 @@ export const relationship =
           [`${meta.fieldKey}Count`]: graphql.field({
             type: graphql.Int,
             args: {
-              where: graphql.arg({ type: graphql.nonNull(listTypes.where), defaultValue: {} }),
+              where: graphql.arg({ type: graphql.nonNull(modelTypes.where), defaultValue: {} }),
             },
             resolve({ value }, args) {
               return value.count({
@@ -207,34 +207,34 @@ export const relationship =
     return fieldType({
       kind: 'relation',
       mode: 'one',
-      list: foreignListKey,
+      model: foreignmodelKey,
       field: foreignFieldKey,
       foreignKey: config.db?.foreignKey,
     })({
       ...commonConfig,
       input: {
         where: {
-          arg: graphql.arg({ type: listTypes.where }),
+          arg: graphql.arg({ type: modelTypes.where }),
           resolve(value, context, resolve) {
             return resolve(value);
           },
         },
-        create: listTypes.relateTo.one.create && {
-          arg: graphql.arg({ type: listTypes.relateTo.one.create }),
+        create: modelTypes.relateTo.one.create && {
+          arg: graphql.arg({ type: modelTypes.relateTo.one.create }),
           async resolve(value, context, resolve) {
             return resolve(value);
           },
         },
 
-        update: listTypes.relateTo.one.update && {
-          arg: graphql.arg({ type: listTypes.relateTo.one.update }),
+        update: modelTypes.relateTo.one.update && {
+          arg: graphql.arg({ type: modelTypes.relateTo.one.update }),
           async resolve(value, context, resolve) {
             return resolve(value);
           },
         },
       },
       output: graphql.field({
-        type: listTypes.output,
+        type: modelTypes.output,
         resolve({ value }) {
           return value();
         },

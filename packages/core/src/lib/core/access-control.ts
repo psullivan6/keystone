@@ -1,40 +1,45 @@
 import { assertInputObjectType } from 'graphql';
 import {
-  BaseListTypeInfo,
-  CreateListItemAccessControl,
+  BaseModelTypeInfo,
+  CreateModelItemAccessControl,
   FieldAccessControl,
   IndividualFieldAccessControl,
-  ListAccessControl,
-  DeleteListItemAccessControl,
+  ModelAccessControl,
+  DeleteModelItemAccessControl,
   FieldCreateItemAccessArgs,
   FieldReadItemAccessArgs,
   FieldUpdateItemAccessArgs,
-  UpdateListItemAccessControl,
-  ListOperationAccessControl,
-  ListFilterAccessControl,
+  UpdateModelItemAccessControl,
+  ModelOperationAccessControl,
+  ModelsFilterAccessControl,
   KeystoneContext,
   getGqlNames,
 } from '../../types';
 import { coerceAndValidateForGraphQLInput } from '../coerceAndValidateForGraphQLInput';
 import { accessReturnError, extensionError } from './graphql-errors';
-import { InitialisedList } from './types-for-lists';
+import { InitialisedModel } from './types-for-lists';
 import { InputFilter } from './where-inputs';
 
 export async function getOperationAccess(
-  list: InitialisedList,
+  model: InitialisedModel,
   context: KeystoneContext,
   operation: 'delete' | 'create' | 'update' | 'query'
 ) {
-  const args = { operation, session: context.session, listKey: list.listKey, context };
+  const args = {
+    operation,
+    session: context.session,
+    modelKey: model.modelKey,
+    context,
+  };
   // Check the mutation access
-  const access = list.access.operation[operation];
+  const access = model.access.operation[operation];
   let result;
   try {
     // @ts-ignore
     result = await access(args);
   } catch (error: any) {
     throw extensionError('Access control', [
-      { error, tag: `${list.listKey}.access.operation.${args.operation}` },
+      { error, tag: `${model.modelKey}.access.operation.${args.operation}` },
     ]);
   }
 
@@ -44,7 +49,7 @@ export async function getOperationAccess(
   // has accidentally tried to return a filter.
   if (resultType !== 'boolean') {
     throw accessReturnError([
-      { tag: `${args.listKey}.access.operation.${args.operation}`, returned: resultType },
+      { tag: `${args.modelKey}.access.operation.${args.operation}`, returned: resultType },
     ]);
   }
 
@@ -52,13 +57,18 @@ export async function getOperationAccess(
 }
 
 export async function getAccessFilters(
-  list: InitialisedList,
+  model: InitialisedModel,
   context: KeystoneContext,
   operation: 'update' | 'query' | 'delete'
 ): Promise<boolean | InputFilter> {
-  const args = { operation, session: context.session, listKey: list.listKey, context };
+  const args = {
+    operation,
+    session: context.session,
+    modelKey: model.modelKey,
+    context,
+  };
   // Check the mutation access
-  const access = list.access.filter[operation];
+  const access = model.access.filter[operation];
   try {
     // @ts-ignore
     let filters = typeof access === 'function' ? await access(args) : access;
@@ -66,7 +76,7 @@ export async function getAccessFilters(
       return filters;
     }
     const schema = context.sudo().graphql.schema;
-    const whereInput = assertInputObjectType(schema.getType(getGqlNames(list).whereInputName));
+    const whereInput = assertInputObjectType(schema.getType(getGqlNames(model).whereInputName));
     const result = coerceAndValidateForGraphQLInput(schema, whereInput, filters);
     if (result.kind === 'valid') {
       return result.value;
@@ -74,13 +84,13 @@ export async function getAccessFilters(
     throw result.error;
   } catch (error: any) {
     throw extensionError('Access control', [
-      { error, tag: `${args.listKey}.access.filter.${args.operation}` },
+      { error, tag: `${args.modelKey}.access.filter.${args.operation}` },
     ]);
   }
 }
 
 export function parseFieldAccessControl(
-  access: FieldAccessControl<BaseListTypeInfo> | undefined
+  access: FieldAccessControl<BaseModelTypeInfo> | undefined
 ): ResolvedFieldAccessControl {
   if (typeof access === 'boolean' || typeof access === 'function') {
     return { read: access, create: access, update: access };
@@ -95,14 +105,14 @@ export function parseFieldAccessControl(
 }
 
 export type ResolvedFieldAccessControl = {
-  read: IndividualFieldAccessControl<FieldReadItemAccessArgs<BaseListTypeInfo>>;
-  create: IndividualFieldAccessControl<FieldCreateItemAccessArgs<BaseListTypeInfo>>;
-  update: IndividualFieldAccessControl<FieldUpdateItemAccessArgs<BaseListTypeInfo>>;
+  read: IndividualFieldAccessControl<FieldReadItemAccessArgs<BaseModelTypeInfo>>;
+  create: IndividualFieldAccessControl<FieldCreateItemAccessArgs<BaseModelTypeInfo>>;
+  update: IndividualFieldAccessControl<FieldUpdateItemAccessArgs<BaseModelTypeInfo>>;
 };
 
-export function parseListAccessControl(
-  access: ListAccessControl<BaseListTypeInfo> | undefined
-): ResolvedListAccessControl {
+export function parsemodelAccessControl(
+  access: ModelAccessControl<BaseModelTypeInfo> | undefined
+): ResolvedModelAccessControl {
   let item, filter, operation;
 
   if (typeof access?.operation === 'function') {
@@ -149,23 +159,23 @@ export function parseListAccessControl(
   return { operation, filter, item };
 }
 
-export type ResolvedListAccessControl = {
+export type ResolvedModelAccessControl = {
   operation: {
-    create: ListOperationAccessControl<'create', BaseListTypeInfo>;
-    query: ListOperationAccessControl<'query', BaseListTypeInfo>;
-    update: ListOperationAccessControl<'update', BaseListTypeInfo>;
-    delete: ListOperationAccessControl<'delete', BaseListTypeInfo>;
+    create: ModelOperationAccessControl<'create', BaseModelTypeInfo>;
+    query: ModelOperationAccessControl<'query', BaseModelTypeInfo>;
+    update: ModelOperationAccessControl<'update', BaseModelTypeInfo>;
+    delete: ModelOperationAccessControl<'delete', BaseModelTypeInfo>;
   };
   filter: {
     // create: not supported
-    query: ListFilterAccessControl<'query', BaseListTypeInfo>;
-    update: ListFilterAccessControl<'update', BaseListTypeInfo>;
-    delete: ListFilterAccessControl<'delete', BaseListTypeInfo>;
+    query: ModelsFilterAccessControl<'query', BaseModelTypeInfo>;
+    update: ModelsFilterAccessControl<'update', BaseModelTypeInfo>;
+    delete: ModelsFilterAccessControl<'delete', BaseModelTypeInfo>;
   };
   item: {
-    create: CreateListItemAccessControl<BaseListTypeInfo>;
+    create: CreateModelItemAccessControl<BaseModelTypeInfo>;
     // query: not supported
-    update: UpdateListItemAccessControl<BaseListTypeInfo>;
-    delete: DeleteListItemAccessControl<BaseListTypeInfo>;
+    update: UpdateModelItemAccessControl<BaseModelTypeInfo>;
+    delete: DeleteModelItemAccessControl<BaseModelTypeInfo>;
   };
 };

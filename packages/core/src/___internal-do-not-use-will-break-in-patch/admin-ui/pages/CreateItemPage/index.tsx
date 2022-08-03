@@ -7,14 +7,14 @@ import { Button } from '@keystone-ui/button';
 import { useRouter } from 'next/router';
 import { Fields } from '../../../../admin-ui/utils';
 import { PageContainer } from '../../../../admin-ui/components/PageContainer';
-import { useKeystone, useList } from '../../../../admin-ui';
+import { useKeystone, useModel } from '../../../../admin-ui';
 import { GraphQLErrorNotice } from '../../../../admin-ui/components';
-import { ListMeta } from '../../../../types';
+import { ModelMeta } from '../../../../types';
 import { useCreateItem } from '../../../../admin-ui/utils/useCreateItem';
 import { BaseToolbar, ColumnLayout, ItemPageHeader } from '../ItemPage/common';
 
-function CreatePageForm(props: { list: ListMeta }) {
-  const createItem = useCreateItem(props.list);
+function CreatePageForm(props: { model: ModelMeta }) {
+  const createItem = useCreateItem(props.model);
   const router = useRouter();
   return (
     <Box paddingTop="xlarge">
@@ -30,7 +30,7 @@ function CreatePageForm(props: { list: ListMeta }) {
           event.preventDefault();
           const item = await createItem.create();
           if (item) {
-            router.push(`/${props.list.path}/${item.id}`);
+            router.push(`/${props.model.path}/${item.id}`);
           }
         }}
       >
@@ -42,7 +42,7 @@ function CreatePageForm(props: { list: ListMeta }) {
             weight="bold"
             tone="active"
           >
-            Create {props.list.singular}
+            Create {props.model.singular}
           </Button>
         </BaseToolbar>
       </form>
@@ -50,19 +50,19 @@ function CreatePageForm(props: { list: ListMeta }) {
   );
 }
 
-type CreateItemPageProps = { listKey: string };
+type CreateItemPageProps = { modelKey: string };
 
 export const getCreateItemPage = (props: CreateItemPageProps) => () =>
   <CreateItemPage {...props} />;
 
 function CreateItemPage(props: CreateItemPageProps) {
-  const list = useList(props.listKey);
+  const model = useModel(props.modelKey);
   const { createViewFieldModes } = useKeystone();
 
   return (
     <PageContainer
-      title={`Create ${list.singular}`}
-      header={<ItemPageHeader list={list} label="Create" />}
+      title={`Create ${model.singular}`}
+      header={<ItemPageHeader model={model} label="Create" />}
     >
       <ColumnLayout>
         <Box>
@@ -77,7 +77,7 @@ function CreateItemPage(props: CreateItemPageProps) {
             />
           )}
           {createViewFieldModes.state === 'loading' && <LoadingDots label="Loading create form" />}
-          <CreatePageForm list={list} />
+          <CreatePageForm model={model} />
         </Box>
       </ColumnLayout>
     </PageContainer>

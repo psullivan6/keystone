@@ -5,23 +5,23 @@ import { jsx, Box } from '@keystone-ui/core';
 import { Drawer } from '@keystone-ui/modals';
 import { LoadingDots } from '@keystone-ui/loading';
 
-import { useKeystone, useList } from '../context';
+import { useKeystone, useModel } from '../context';
 
 import { Fields } from '../utils/Fields';
 import { useCreateItem } from '../utils/useCreateItem';
 import { GraphQLErrorNotice } from './GraphQLErrorNotice';
 
 export function CreateItemDrawer({
-  listKey,
+  modelKey,
   onClose,
   onCreate,
 }: {
-  listKey: string;
+  modelKey: string;
   onClose: () => void;
   onCreate: (item: { id: string; label: string }) => void;
 }) {
   const { createViewFieldModes } = useKeystone();
-  const list = useList(listKey);
+  const list = useModel(modelKey);
   const createItemState = useCreateItem(list);
 
   return (

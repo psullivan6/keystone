@@ -12,7 +12,7 @@ import { OptionPrimitive, Options } from '@keystone-ui/options';
 import { PopoverDialog, usePopover } from '@keystone-ui/popover';
 
 import { FieldMeta, JSONValue } from '../../../../types';
-import { useList } from '../../../../admin-ui/context';
+import { useModel } from '../../../../admin-ui/context';
 import { useRouter } from '../../../../admin-ui/router';
 
 type State =
@@ -42,10 +42,10 @@ const fieldSelectComponents: ComponentProps<typeof Options>['components'] = {
   },
 };
 export function FilterAdd({
-  listKey,
+  modelKey,
   filterableFields,
 }: {
-  listKey: string;
+  modelKey: string;
   filterableFields: Set<string>;
 }) {
   const { isOpen, setOpen, trigger, dialog, arrow } = usePopover({
@@ -63,12 +63,12 @@ export function FilterAdd({
         onClick={() => setOpen(!isOpen)}
       >
         <Box as="span" marginRight="xsmall">
-          Filter List
+          Filter Model
         </Box>
         <ChevronDownIcon size="small" />
       </Button>
       <PopoverDialog
-        aria-label={`Filters options, list of filters to apply to the ${listKey} list`}
+        aria-label={`Filters options, model of filters to apply to the ${modelKey} model`}
         arrow={arrow}
         isVisible={isOpen}
         {...dialog.props}
@@ -79,7 +79,7 @@ export function FilterAdd({
             onClose={() => {
               setOpen(false);
             }}
-            listKey={listKey}
+            modelKey={modelKey}
             filterableFields={filterableFields}
           />
         )}
@@ -90,28 +90,28 @@ export function FilterAdd({
 
 function FilterAddPopoverContent({
   onClose,
-  listKey,
+  modelKey,
   filterableFields,
 }: {
   onClose: () => void;
-  listKey: string;
+  modelKey: string;
   filterableFields: Set<string>;
 }) {
-  const list = useList(listKey);
+  const model = useModel(modelKey);
   const router = useRouter();
   const fieldsWithFilters = useMemo(() => {
     const fieldsWithFilters: Record<
       string,
       FieldMeta & { controller: { filter: NonNullable<FieldMeta['controller']['filter']> } }
     > = {};
-    Object.keys(list.fields).forEach(fieldPath => {
-      const field = list.fields[fieldPath];
+    Object.keys(model.fields).forEach(fieldPath => {
+      const field = model.fields[fieldPath];
       if (filterableFields.has(fieldPath) && field.controller.filter) {
         fieldsWithFilters[fieldPath] = field as any;
       }
     });
     return fieldsWithFilters;
-  }, [list.fields, filterableFields]);
+  }, [model.fields, filterableFields]);
   const filtersByFieldThenType = useMemo(() => {
     const filtersByFieldThenType: Record<string, Record<string, string>> = {};
     Object.keys(fieldsWithFilters).forEach(fieldPath => {
@@ -176,7 +176,7 @@ function FilterAddPopoverContent({
                 return 'Filter';
               }
               case 'filter-value': {
-                return list.fields[state.fieldPath].label;
+                return model.fields[state.fieldPath].label;
               }
             }
           })()}

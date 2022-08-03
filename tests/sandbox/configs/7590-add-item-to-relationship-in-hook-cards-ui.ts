@@ -35,4 +35,4 @@ export const lists = {
   }),
 };
 
-export default config({ db: dbConfig, lists });
+export default config({ db: dbConfig, models: lists });

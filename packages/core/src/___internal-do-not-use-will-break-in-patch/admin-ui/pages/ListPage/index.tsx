@@ -11,7 +11,7 @@ import { LoadingDots } from '@keystone-ui/loading';
 import { AlertDialog } from '@keystone-ui/modals';
 import { useToasts } from '@keystone-ui/toast';
 
-import { ListMeta } from '../../../../types';
+import { ModelMeta } from '../../../../types';
 import {
   getRootGraphQLFieldsFromFieldController,
   DataGetter,
@@ -22,17 +22,17 @@ import { gql, TypedDocumentNode, useMutation, useQuery } from '../../../../admin
 import { CellLink } from '../../../../admin-ui/components';
 import { PageContainer, HEADER_HEIGHT } from '../../../../admin-ui/components/PageContainer';
 import { Pagination, PaginationLabel } from '../../../../admin-ui/components/Pagination';
-import { useList } from '../../../../admin-ui/context';
+import { useModel } from '../../../../admin-ui/context';
 import { Link, useRouter } from '../../../../admin-ui/router';
 import { FieldSelection } from './FieldSelection';
 import { FilterAdd } from './FilterAdd';
-import { FilterList } from './FilterList';
+import { FilterModel } from './FilterList';
 import { SortSelection } from './SortSelection';
 import { useFilters } from './useFilters';
 import { useSelectedFields } from './useSelectedFields';
 import { useSort } from './useSort';
 
-type ListPageProps = { listKey: string };
+type ListPageProps = { modelKey: string };
 
 type FetchedFieldMeta = {
   path: string;
@@ -41,11 +41,11 @@ type FetchedFieldMeta = {
   listView: { fieldMode: 'read' | 'hidden' };
 };
 
-let listMetaGraphqlQuery: TypedDocumentNode<
+let modelMetaGraphqlQuery: TypedDocumentNode<
   {
     keystone: {
       adminMeta: {
-        list: {
+        model: {
           hideCreate: boolean;
           hideDelete: boolean;
           fields: FetchedFieldMeta[];
@@ -53,12 +53,12 @@ let listMetaGraphqlQuery: TypedDocumentNode<
       };
     };
   },
-  { listKey: string }
+  { modelKey: string }
 > = gql`
-  query ($listKey: String!) {
+  query ($modelKey: String!) {
     keystone {
       adminMeta {
-        list(key: $listKey) {
+        model(key: $modelKey) {
           hideDelete
           hideCreate
           fields {
@@ -77,9 +77,9 @@ let listMetaGraphqlQuery: TypedDocumentNode<
 
 const storeableQueries = ['sortBy', 'fields'];
 
-function useQueryParamsFromLocalStorage(listKey: string) {
+function useQueryParamsFromLocalStorage(modelKey: string) {
   const router = useRouter();
-  const localStorageKey = `keystone.list.${listKey}.list.page.info`;
+  const localStorageKey = `keystone.models.${modelKey}.model.page.info`;
 
   const resetToDefaults = () => {
     localStorage.removeItem(localStorageKey);
@@ -90,11 +90,11 @@ function useQueryParamsFromLocalStorage(listKey: string) {
   // MERGE QUERY PARAMS FROM CACHE WITH QUERY PARAMS FROM ROUTER
   useEffect(
     () => {
-      let hasSomeQueryParamsWhichAreAboutListPage = Object.keys(router.query).some(x => {
+      let hasSomeQueryParamsWhichAreAboutModelPage = Object.keys(router.query).some(x => {
         return x.startsWith('!') || storeableQueries.includes(x);
       });
 
-      if (!hasSomeQueryParamsWhichAreAboutListPage && router.isReady) {
+      if (!hasSomeQueryParamsWhichAreAboutModelPage && router.isReady) {
         const queryParamsFromLocalStorage = localStorage.getItem(localStorageKey);
         let parsed;
         try {
@@ -125,29 +125,29 @@ function useQueryParamsFromLocalStorage(listKey: string) {
   return { resetToDefaults };
 }
 
-export const getListPage = (props: ListPageProps) => () => <ListPage {...props} />;
+export const getListPage = (props: ListPageProps) => () => <ModelPage {...props} />;
 
-const ListPage = ({ listKey }: ListPageProps) => {
-  const list = useList(listKey);
+const ModelPage = ({ modelKey }: ListPageProps) => {
+  const model = useModel(modelKey);
 
   const { query } = useRouter();
 
-  const { resetToDefaults } = useQueryParamsFromLocalStorage(listKey);
+  const { resetToDefaults } = useQueryParamsFromLocalStorage(modelKey);
 
   let currentPage =
     typeof query.page === 'string' && !Number.isNaN(parseInt(query.page)) ? Number(query.page) : 1;
   let pageSize =
     typeof query.pageSize === 'string' && !Number.isNaN(parseInt(query.pageSize))
       ? parseInt(query.pageSize)
-      : list.pageSize;
+      : model.pageSize;
 
-  let metaQuery = useQuery(listMetaGraphqlQuery, { variables: { listKey } });
+  let metaQuery = useQuery(modelMetaGraphqlQuery, { variables: { modelKey } });
 
   let { listViewFieldModesByField, filterableFields, orderableFields } = useMemo(() => {
     const listViewFieldModesByField: Record<string, 'read' | 'hidden'> = {};
     const orderableFields = new Set<string>();
     const filterableFields = new Set<string>();
-    for (const field of metaQuery.data?.keystone.adminMeta.list?.fields || []) {
+    for (const field of metaQuery.data?.keystone.adminMeta.model?.fields || []) {
       listViewFieldModesByField[field.path] = field.listView.fieldMode;
       if (field.isOrderable) {
         orderableFields.add(field.path);
@@ -158,13 +158,13 @@ const ListPage = ({ listKey }: ListPageProps) => {
     }
 
     return { listViewFieldModesByField, orderableFields, filterableFields };
-  }, [metaQuery.data?.keystone.adminMeta.list?.fields]);
+  }, [metaQuery.data?.keystone.adminMeta.model?.fields]);
 
-  const sort = useSort(list, orderableFields);
+  const sort = useSort(model, orderableFields);
 
-  const filters = useFilters(list, filterableFields);
+  const filters = useFilters(model, filterableFields);
 
-  let selectedFields = useSelectedFields(list, listViewFieldModesByField);
+  let selectedFields = useSelectedFields(model, listViewFieldModesByField);
 
   let {
     data: newData,
@@ -175,15 +175,15 @@ const ListPage = ({ listKey }: ListPageProps) => {
     useMemo(() => {
       let selectedGqlFields = [...selectedFields]
         .map(fieldPath => {
-          return list.fields[fieldPath].controller.graphqlSelection;
+          return model.fields[fieldPath].controller.graphqlSelection;
         })
         .join('\n');
       return gql`
-      query ($where: ${list.gqlNames.whereInputName}, $take: Int!, $skip: Int!, $orderBy: [${
-        list.gqlNames.listOrderName
+      query ($where: ${model.gqlNames.whereInputName}, $take: Int!, $skip: Int!, $orderBy: [${
+        model.gqlNames.modelOrderName
       }!]) {
         items: ${
-          list.gqlNames.listQueryName
+          model.gqlNames.modelQueryName
         }(where: $where,take: $take, skip: $skip, orderBy: $orderBy) {
           ${
             // TODO: maybe namespace all the fields instead of doing this
@@ -191,10 +191,10 @@ const ListPage = ({ listKey }: ListPageProps) => {
           }
           ${selectedGqlFields}
         }
-        count: ${list.gqlNames.listQueryCountName}(where: $where)
+        count: ${model.gqlNames.modelQueryCountName}(where: $where)
       }
     `;
-    }, [list, selectedFields]),
+    }, [model, selectedFields]),
     {
       fetchPolicy: 'cache-and-network',
       errorPolicy: 'all',
@@ -238,24 +238,26 @@ const ListPage = ({ listKey }: ListPageProps) => {
   }
 
   const theme = useTheme();
-  const showCreate = !(metaQuery.data?.keystone.adminMeta.list?.hideCreate ?? true) || null;
+  const showCreate = !(metaQuery.data?.keystone.adminMeta.model?.hideCreate ?? true) || null;
 
   return (
-    <PageContainer header={<ListPageHeader listKey={listKey} />} title={list.label}>
+    <PageContainer header={<ListPageHeader modelKey={modelKey} />} title={model.label}>
       {metaQuery.error ? (
         // TODO: Show errors nicely and with information
         'Error...'
       ) : data && metaQuery.data ? (
         <Fragment>
-          {list.description !== null && (
-            <p css={{ marginTop: '24px', maxWidth: '704px' }}>{list.description}</p>
+          {model.description !== null && (
+            <p css={{ marginTop: '24px', maxWidth: '704px' }}>{model.description}</p>
           )}
           <Stack across gap="medium" align="center" marginTop="xlarge">
-            {showCreate && <CreateButton listKey={listKey} />}
+            {showCreate && <CreateButton modelKey={modelKey} />}
             {data.count || filters.filters.length ? (
-              <FilterAdd listKey={listKey} filterableFields={filterableFields} />
+              <FilterAdd modelKey={modelKey} filterableFields={filterableFields} />
             ) : null}
-            {filters.filters.length ? <FilterList filters={filters.filters} list={list} /> : null}
+            {filters.filters.length ? (
+              <FilterModel filters={filters.filters} model={model} />
+            ) : null}
             {Boolean(filters.filters.length || query.sortBy || query.fields) && (
               <Button size="small" onClick={resetToDefaults}>
                 Reset to defaults
@@ -274,9 +276,9 @@ const ListPage = ({ listKey }: ListPageProps) => {
                         <span css={{ marginRight: theme.spacing.small }}>
                           Selected {selectedItemsCount} of {data.items.length}
                         </span>
-                        {!(metaQuery.data?.keystone.adminMeta.list?.hideDelete ?? true) && (
+                        {!(metaQuery.data?.keystone.adminMeta.model?.hideDelete ?? true) && (
                           <DeleteManyButton
-                            list={list}
+                            list={model}
                             selectedItems={selectedItems}
                             refetch={refetch}
                           />
@@ -289,14 +291,15 @@ const ListPage = ({ listKey }: ListPageProps) => {
                       <PaginationLabel
                         currentPage={currentPage}
                         pageSize={pageSize}
-                        plural={list.plural}
-                        singular={list.singular}
+                        plural={model.plural}
+                        singular={model.singular}
                         total={data.count}
                       />
-                      , sorted by <SortSelection list={list} orderableFields={orderableFields} />
+                      , sorted by{' '}
+                      <SortSelection list={model} orderableFields={orderableFields} />
                       with{' '}
                       <FieldSelection
-                        list={list}
+                        model={model}
                         fieldModesByFieldPath={listViewFieldModesByField}
                       />{' '}
                       {loading && (
@@ -310,7 +313,7 @@ const ListPage = ({ listKey }: ListPageProps) => {
                 count={data.count}
                 currentPage={currentPage}
                 itemsGetter={dataGetter.get('items')}
-                listKey={listKey}
+                modelKey={modelKey}
                 pageSize={pageSize}
                 selectedFields={selectedFields}
                 sort={sort}
@@ -325,7 +328,7 @@ const ListPage = ({ listKey }: ListPageProps) => {
               />
             </Fragment>
           ) : (
-            <ResultsSummaryContainer>No {list.plural} found.</ResultsSummaryContainer>
+            <ResultsSummaryContainer>No {model.plural} found.</ResultsSummaryContainer>
           )}
         </Fragment>
       ) : (
@@ -337,8 +340,8 @@ const ListPage = ({ listKey }: ListPageProps) => {
   );
 };
 
-const CreateButton = ({ listKey }: { listKey: string }) => {
-  const list = useList(listKey);
+const CreateButton = ({ modelKey }: { modelKey: string }) => {
+  const list = useModel(modelKey);
 
   return (
     <Fragment>
@@ -361,8 +364,8 @@ const CreateButton = ({ listKey }: { listKey: string }) => {
   );
 };
 
-const ListPageHeader = ({ listKey }: { listKey: string }) => {
-  const list = useList(listKey);
+const ListPageHeader = ({ modelKey }: { modelKey: string }) => {
+  const model = useModel(modelKey);
   return (
     <Fragment>
       <div
@@ -373,8 +376,8 @@ const ListPageHeader = ({ listKey }: { listKey: string }) => {
           justifyContent: 'space-between',
         }}
       >
-        <Heading type="h3">{list.label}</Heading>
-        {/* <CreateButton listKey={listKey} /> */}
+        <Heading type="h3">{model.label}</Heading>
+        {/* <CreateButton modelKey={modelKey} /> */}
       </div>
     </Fragment>
   );
@@ -421,7 +424,7 @@ function DeleteManyButton({
   refetch,
 }: {
   selectedItems: ReadonlySet<string>;
-  list: ListMeta;
+  list: ModelMeta;
   refetch: () => void;
 }) {
   const [deleteItems, deleteItemsState] = useMutation(
@@ -549,7 +552,7 @@ function DeleteManyButton({
 
 function ListTable({
   selectedFields,
-  listKey,
+  modelKey,
   itemsGetter,
   count,
   sort,
@@ -560,7 +563,7 @@ function ListTable({
   orderableFields,
 }: {
   selectedFields: ReturnType<typeof useSelectedFields>;
-  listKey: string;
+  modelKey: string;
   itemsGetter: DataGetter<DeepNullable<{ id: string; [key: string]: any }[]>>;
   count: number;
   sort: { field: string; direction: 'ASC' | 'DESC' } | null;
@@ -570,14 +573,14 @@ function ListTable({
   onSelectedItemsChange(selectedItems: ReadonlySet<string>): void;
   orderableFields: Set<string>;
 }) {
-  const list = useList(listKey);
+  const model = useModel(modelKey);
   const { query } = useRouter();
   const shouldShowLinkIcon =
-    !list.fields[selectedFields.keys().next().value].views.Cell.supportsLinkTo;
+    !model.fields[selectedFields.keys().next().value].views.Cell.supportsLinkTo;
   return (
     <Box paddingBottom="xlarge">
       <TableContainer>
-        <VisuallyHidden as="caption">{list.label} list</VisuallyHidden>
+        <VisuallyHidden as="caption">{model.label} list</VisuallyHidden>
         <colgroup>
           <col width="30" />
           {shouldShowLinkIcon && <col width="30" />}
@@ -615,7 +618,7 @@ function ListTable({
           </TableHeaderCell>
           {shouldShowLinkIcon && <TableHeaderCell />}
           {[...selectedFields].map(path => {
-            const label = list.fields[path].label;
+            const label = model.fields[path].label;
             if (!orderableFields.has(path)) {
               return <TableHeaderCell key={path}>{label}</TableHeaderCell>;
             }
@@ -693,16 +696,16 @@ function ListTable({
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
-                      href={`/${list.path}/[id]`}
-                      as={`/${list.path}/${encodeURIComponent(itemId)}`}
+                      href={`/${model.path}/[id]`}
+                      as={`/${model.path}/${encodeURIComponent(itemId)}`}
                     >
                       <ArrowRightCircleIcon size="smallish" aria-label="Go to item" />
                     </Link>
                   </TableBodyCell>
                 )}
                 {[...selectedFields].map((path, i) => {
-                  const field = list.fields[path];
-                  let { Cell } = list.fields[path].views;
+                  const field = model.fields[path];
+                  let { Cell } = model.fields[path].views;
                   const itemForField: Record<string, any> = {};
                   for (const graphqlField of getRootGraphQLFieldsFromFieldController(
                     field.controller
@@ -714,8 +717,8 @@ function ListTable({
                         <TableBodyCell css={{ color: 'red' }} key={path}>
                           {i === 0 && Cell.supportsLinkTo ? (
                             <CellLink
-                              href={`/${list.path}/[id]`}
-                              as={`/${list.path}/${encodeURIComponent(itemId)}`}
+                              href={`/${model.path}/[id]`}
+                              as={`/${model.path}/${encodeURIComponent(itemId)}`}
                             >
                               {errorMessage}
                             </CellLink>
@@ -736,8 +739,8 @@ function ListTable({
                         linkTo={
                           i === 0 && Cell.supportsLinkTo
                             ? {
-                                href: `/${list.path}/[id]`,
-                                as: `/${list.path}/${encodeURIComponent(itemId)}`,
+                                href: `/${model.path}/[id]`,
+                                as: `/${model.path}/${encodeURIComponent(itemId)}`,
                               }
                             : undefined
                         }
@@ -750,7 +753,7 @@ function ListTable({
           })}
         </tbody>
       </TableContainer>
-      <Pagination list={list} total={count} currentPage={currentPage} pageSize={pageSize} />
+      <Pagination list={model} total={count} currentPage={currentPage} pageSize={pageSize} />
     </Box>
   );
 }

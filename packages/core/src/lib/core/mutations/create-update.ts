@@ -1,6 +1,6 @@
 import { KeystoneContext, BaseItem } from '../../../types';
 import { ResolvedDBField } from '../resolve-relationships';
-import { InitialisedList } from '../types-for-lists';
+import { InitialisedModel } from '../types-for-lists';
 import {
   promiseAllRejectWithAllErrors,
   getDBFieldKeyForFieldOnMultiField,
@@ -32,14 +32,14 @@ import { validateUpdateCreate } from './validation';
 
 async function createSingle(
   { data: rawData }: { data: Record<string, any> },
-  list: InitialisedList,
+  list: InitialisedModel,
   context: KeystoneContext,
   operationAccess: boolean
 ) {
   // Operation level access control
   if (!operationAccess) {
     throw accessDeniedError(
-      `You cannot perform the 'create' operation on the list '${list.listKey}'.`
+      `You cannot perform the 'create' operation on the list '${list.modelKey}'.`
     );
   }
 
@@ -68,7 +68,7 @@ export class NestedMutationState {
   constructor(context: KeystoneContext) {
     this.#context = context;
   }
-  async create(data: Record<string, any>, list: InitialisedList) {
+  async create(data: Record<string, any>, list: InitialisedModel) {
     const context = this.#context;
 
     // Check operation permission to pass into single operation
@@ -87,7 +87,7 @@ export class NestedMutationState {
 
 export async function createOne(
   createInput: { data: Record<string, any> },
-  list: InitialisedList,
+  list: InitialisedModel,
   context: KeystoneContext
 ) {
   // Check operation permission to pass into single operation
@@ -102,7 +102,7 @@ export async function createOne(
 
 export async function createMany(
   createInputs: { data: Record<string, any>[] },
-  list: InitialisedList,
+  list: InitialisedModel,
   context: KeystoneContext
 ) {
   // Check operation permission to pass into single operation
@@ -119,7 +119,7 @@ export async function createMany(
 
 async function updateSingle(
   updateInput: { where: UniqueInputFilter; data: Record<string, any> },
-  list: InitialisedList,
+  model: InitialisedModel,
   context: KeystoneContext,
   accessFilters: boolean | InputFilter,
   operationAccess: boolean
@@ -127,21 +127,21 @@ async function updateSingle(
   // Operation level access control
   if (!operationAccess) {
     throw accessDeniedError(
-      `You cannot perform the 'update' operation on the list '${list.listKey}'.`
+      `You cannot perform the 'update' operation on the model '${model.modelKey}'.`
     );
   }
 
   const { where: uniqueInput, data: rawData } = updateInput;
   // Validate and resolve the input filter
-  const uniqueWhere = await resolveUniqueWhereInput(uniqueInput, list.fields, context);
+  const uniqueWhere = await resolveUniqueWhereInput(uniqueInput, model.fields, context);
 
   // Check filter access
   const fieldKey = Object.keys(uniqueWhere)[0];
-  await checkFilterOrderAccess([{ fieldKey, list }], context, 'filter');
+  await checkFilterOrderAccess([{ fieldKey, model }], context, 'filter');
 
   // Filter and Item access control. Will throw an accessDeniedError if not allowed.
   const item = await getAccessControlledItemForUpdate(
-    list,
+    model,
     context,
     uniqueWhere,
     accessFilters,
@@ -149,7 +149,7 @@ async function updateSingle(
   );
 
   const { afterOperation, data } = await resolveInputForCreateOrUpdate(
-    list,
+    model,
     context,
     rawData,
     item
@@ -158,7 +158,7 @@ async function updateSingle(
   const writeLimit = getWriteLimit(context);
 
   const updatedItem = await writeLimit(() =>
-    runWithPrisma(context, list, model => model.update({ where: { id: item.id }, data }))
+    runWithPrisma(context, model, model => model.update({ where: { id: item.id }, data }))
   );
 
   await afterOperation(updatedItem);
@@ -168,21 +168,21 @@ async function updateSingle(
 
 export async function updateOne(
   updateInput: { where: UniqueInputFilter; data: Record<string, any> },
-  list: InitialisedList,
+  model: InitialisedModel,
   context: KeystoneContext
 ) {
   // Check operation permission to pass into single operation
-  const operationAccess = await getOperationAccess(list, context, 'update');
+  const operationAccess = await getOperationAccess(model, context, 'update');
 
-  // Get list-level access control filters
-  const accessFilters = await getAccessFilters(list, context, 'update');
+  // Get model-level access control filters
+  const accessFilters = await getAccessFilters(model, context, 'update');
 
-  return updateSingle(updateInput, list, context, accessFilters, operationAccess);
+  return updateSingle(updateInput, model, context, accessFilters, operationAccess);
 }
 
 export async function updateMany(
   { data }: { data: { where: UniqueInputFilter; data: Record<string, any> }[] },
-  list: InitialisedList,
+  list: InitialisedModel,
   context: KeystoneContext
 ) {
   // Check operation permission to pass into single operation
@@ -197,10 +197,10 @@ export async function updateMany(
 }
 
 async function getResolvedData(
-  list: InitialisedList,
+  model: InitialisedModel,
   hookArgs: {
     context: KeystoneContext;
-    listKey: string;
+    modelKey: string;
     inputData: Record<string, any>;
   } & ({ operation: 'create'; item: undefined } | { operation: 'update'; item: BaseItem }),
   nestedMutationState: NestedMutationState
@@ -214,14 +214,14 @@ async function getResolvedData(
   const resolverErrors: { error: Error; tag: string }[] = [];
   resolvedData = Object.fromEntries(
     await Promise.all(
-      Object.entries(list.fields).map(async ([fieldKey, field]) => {
+      Object.entries(model.fields).map(async ([fieldKey, field]) => {
         const inputResolver = field.input?.[operation]?.resolve;
         let input = resolvedData[fieldKey];
         if (inputResolver && field.dbField.kind !== 'relation') {
           try {
             input = await inputResolver(input, context, undefined);
           } catch (error: any) {
-            resolverErrors.push({ error, tag: `${list.listKey}.${fieldKey}` });
+            resolverErrors.push({ error, tag: `${model.modelKey}.${fieldKey}` });
           }
         }
         return [fieldKey, input] as const;
@@ -236,11 +236,11 @@ async function getResolvedData(
   const relationshipErrors: { error: Error; tag: string }[] = [];
   resolvedData = Object.fromEntries(
     await Promise.all(
-      Object.entries(list.fields).map(async ([fieldKey, field]) => {
+      Object.entries(model.fields).map(async ([fieldKey, field]) => {
         const inputResolver = field.input?.[operation]?.resolve;
         let input = resolvedData[fieldKey];
         if (inputResolver && field.dbField.kind === 'relation') {
-          const tag = `${list.listKey}.${fieldKey}`;
+          const tag = `${model.modelKey}.${fieldKey}`;
           try {
             input = await inputResolver(
               input,
@@ -255,7 +255,7 @@ async function getResolvedData(
                   // No-op: Should this be UserInputError?
                   return () => undefined;
                 }
-                const foreignList = list.lists[field.dbField.list];
+                const foreignList = model.models[field.dbField.model];
                 let resolver;
                 if (field.dbField.mode === 'many') {
                   if (operation === 'create') {
@@ -295,7 +295,7 @@ async function getResolvedData(
   const fieldsErrors: { error: Error; tag: string }[] = [];
   resolvedData = Object.fromEntries(
     await Promise.all(
-      Object.entries(list.fields).map(async ([fieldKey, field]) => {
+      Object.entries(model.fields).map(async ([fieldKey, field]) => {
         if (field.hooks.resolveInput === undefined) {
           return [fieldKey, resolvedData[fieldKey]];
         } else {
@@ -309,7 +309,10 @@ async function getResolvedData(
               }),
             ];
           } catch (error: any) {
-            fieldsErrors.push({ error, tag: `${list.listKey}.${fieldKey}.hooks.${hookName}` });
+            fieldsErrors.push({
+              error,
+              tag: `${model.modelKey}.${fieldKey}.hooks.${hookName}`,
+            });
             return [fieldKey, undefined];
           }
         }
@@ -320,12 +323,14 @@ async function getResolvedData(
     throw extensionError(hookName, fieldsErrors);
   }
 
-  // List hooks
-  if (list.hooks.resolveInput) {
+  // Model hooks
+  if (model.hooks.resolveInput) {
     try {
-      resolvedData = (await list.hooks.resolveInput({ ...hookArgs, resolvedData })) as any;
+      resolvedData = (await model.hooks.resolveInput({ ...hookArgs, resolvedData })) as any;
     } catch (error: any) {
-      throw extensionError(hookName, [{ error, tag: `${list.listKey}.hooks.${hookName}` }]);
+      throw extensionError(hookName, [
+        { error, tag: `${model.modelKey}.hooks.${hookName}` },
+      ]);
     }
   }
 
@@ -333,7 +338,7 @@ async function getResolvedData(
 }
 
 async function resolveInputForCreateOrUpdate(
-  list: InitialisedList,
+  model: InitialisedModel,
   context: KeystoneContext,
   inputData: Record<string, any>,
   item: BaseItem | undefined
@@ -341,7 +346,7 @@ async function resolveInputForCreateOrUpdate(
   const nestedMutationState = new NestedMutationState(context);
   const baseHookArgs = {
     context,
-    listKey: list.listKey,
+    modelKey: model.modelKey,
     inputData,
     resolvedData: {},
   };
@@ -352,22 +357,22 @@ async function resolveInputForCreateOrUpdate(
 
   // Take the original input and resolve all the fields down to what
   // will be saved into the database.
-  hookArgs.resolvedData = await getResolvedData(list, hookArgs, nestedMutationState);
+  hookArgs.resolvedData = await getResolvedData(model, hookArgs, nestedMutationState);
 
   // Apply all validation checks
-  await validateUpdateCreate({ list, hookArgs });
+  await validateUpdateCreate({ model, hookArgs });
 
   // Run beforeOperation hooks
-  await runSideEffectOnlyHook(list, 'beforeOperation', hookArgs);
+  await runSideEffectOnlyHook(model, 'beforeOperation', hookArgs);
 
   // Return the full resolved input (ready for prisma level operation),
   // and the afterOperation hook to be applied
   return {
-    data: flattenMultiDbFields(list.fields, hookArgs.resolvedData),
+    data: flattenMultiDbFields(model.fields, hookArgs.resolvedData),
     afterOperation: async (updatedItem: BaseItem) => {
       await nestedMutationState.afterOperation();
       await runSideEffectOnlyHook(
-        list,
+        model,
         'afterOperation',
         // at runtime this conditional is pointless
         // but TypeScript needs it because in each case, it will narrow

@@ -30,7 +30,7 @@ export function addRelationshipData(
           ...node,
           data: await fetchDataForOne(
             context,
-            relationship.listKey,
+            relationship.modelKey,
             relationship.selection || '',
             node.data
           ),
@@ -46,7 +46,7 @@ export function addRelationshipData(
               (relationship, data) =>
                 fetchRelationshipData(
                   context,
-                  relationship.listKey,
+                  relationship.modelKey,
                   relationship.many,
                   relationship.selection || '',
                   data
@@ -89,10 +89,10 @@ export async function fetchRelationshipData(
   const ids = Array.isArray(data) ? data.filter(item => item.id != null).map(x => x.id) : [];
   if (!ids.length) return [];
 
-  const labelField = getLabelFieldsForLists(context.graphql.schema)[listKey];
+  const labelField = getLabelFieldsForModels(context.graphql.schema)[listKey];
   const val = await context.graphql.run({
     query: `query($ids: [ID!]!) {items:${
-      context.gqlNames(listKey).listQueryName
+      context.gqlNames(listKey).modelQueryName
     }(where: { id: { in: $ids } }) {${idFieldAlias}:id ${labelFieldAlias}:${labelField}\n${
       selection || ''
     }}}`,
@@ -116,7 +116,7 @@ async function fetchDataForOne(
   const id = data?.id;
   if (id == null) return null;
 
-  const labelField = getLabelFieldsForLists(context.graphql.schema)[listKey];
+  const labelField = getLabelFieldsForModels(context.graphql.schema)[listKey];
 
   // An exception here indicates something wrong with either the system or the
   // configuration (e.g. a bad selection field). These will surface as system
@@ -204,7 +204,7 @@ const document = parse(`
   query {
     keystone {
       adminMeta {
-        lists {
+        models {
           key
           labelField
         }
@@ -213,7 +213,7 @@ const document = parse(`
   }
 `);
 
-export const getLabelFieldsForLists = weakMemoize(function getLabelFieldsForLists(
+export const getLabelFieldsForModels = weakMemoize(function getLabelFieldsForLists(
   schema: GraphQLSchema
 ): Record<string, string> {
   const { data, errors } = executeSync({
@@ -225,6 +225,6 @@ export const getLabelFieldsForLists = weakMemoize(function getLabelFieldsForList
     throw errors[0];
   }
   return Object.fromEntries(
-    data!.keystone.adminMeta.lists.map((x: any) => [x.key, x.labelField as string])
+    data!.keystone.adminMeta.models.map((x: any) => [x.key, x.labelField as string])
   );
 });

@@ -1,5 +1,5 @@
 import { text, password } from '@keystone-6/core/fields';
-import { list, ListSchemaConfig } from '@keystone-6/core';
+import { list, ModelsConfig } from '@keystone-6/core';
 import { statelessSessions } from '@keystone-6/core/session';
 import { createAuth } from '@keystone-6/auth';
 import { apiTestConfig } from '../utils';
@@ -103,7 +103,7 @@ const createFieldImperative = (fieldAccess: BooleanAccess) => ({
   }),
 });
 
-const lists: ListSchemaConfig = {
+const lists: ModelsConfig = {
   User: list({
     fields: {
       name: text(),
@@ -166,7 +166,7 @@ listAccessVariations.forEach(access => {
   });
 });
 const auth = createAuth({
-  listKey: 'User',
+  model: 'User',
   identityField: 'email',
   secretField: 'password',
   sessionData: 'id',
@@ -174,7 +174,7 @@ const auth = createAuth({
 
 const config = auth.withAuth(
   apiTestConfig({
-    lists,
+    models: lists,
     session: statelessSessions({ secret: COOKIE_SECRET }),
   })
 );

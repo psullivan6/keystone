@@ -82,7 +82,7 @@ describe(`Public schema`, () => {
     listConfigVariables.forEach(config => {
       test(JSON.stringify(config), async () => {
         const name = getListName(config);
-        const gqlNames = getGqlNames({ listKey: name, pluralGraphQLName: `${name}s` });
+        const gqlNames = getGqlNames({ modelKey: name, pluralGraphQLName: `${name}s` });
         // The type is used in all the queries and mutations as a return type.
         if (config.omit === true) {
           expect(types).not.toContain(gqlNames.outputTypeName);
@@ -150,12 +150,12 @@ describe(`Public schema`, () => {
         // Queries are only accessible when reading
         if (config.omit !== true && (config.omit === undefined || !config.omit.includes('query'))) {
           expect(queries).toContain(gqlNames.itemQueryName);
-          expect(queries).toContain(gqlNames.listQueryName);
-          expect(queries).toContain(gqlNames.listQueryCountName);
+          expect(queries).toContain(gqlNames.modelQueryName);
+          expect(queries).toContain(gqlNames.modelQueryCountName);
         } else {
           expect(queries).not.toContain(gqlNames.itemQueryName);
-          expect(queries).not.toContain(gqlNames.listQueryName);
-          expect(queries).not.toContain(gqlNames.listQueryCountName);
+          expect(queries).not.toContain(gqlNames.modelQueryName);
+          expect(queries).not.toContain(gqlNames.modelQueryCountName);
         }
 
         if (
@@ -412,7 +412,7 @@ describe(`Sudo schema`, () => {
     listConfigVariables.forEach(config => {
       test(JSON.stringify(config), async () => {
         const name = getListName(config);
-        const gqlNames = getGqlNames({ listKey: name, pluralGraphQLName: `${name}s` });
+        const gqlNames = getGqlNames({ modelKey: name, pluralGraphQLName: `${name}s` });
         expect(types).toContain(gqlNames.outputTypeName);
         expect(types).toContain(gqlNames.whereUniqueInputName);
         expect(types).toContain(gqlNames.relateToManyForCreateInputName);
@@ -445,8 +445,8 @@ describe(`Sudo schema`, () => {
         expect(updateFromMany).toContain('set');
         expect(types).toContain(gqlNames.whereInputName);
         expect(queries).toContain(gqlNames.itemQueryName);
-        expect(queries).toContain(gqlNames.listQueryName);
-        expect(queries).toContain(gqlNames.listQueryCountName);
+        expect(queries).toContain(gqlNames.modelQueryName);
+        expect(queries).toContain(gqlNames.modelQueryCountName);
         expect(mutations).toContain(gqlNames.createMutationName);
         expect(mutations).toContain(gqlNames.updateMutationName);
         expect(mutations).toContain(gqlNames.deleteMutationName);

@@ -13,10 +13,10 @@ import {
   FieldController,
   FieldControllerConfig,
   FieldProps,
-  ListMeta,
+  ModelMeta,
 } from '../../../../types';
 import { Link } from '../../../../admin-ui/router';
-import { useKeystone, useList } from '../../../../admin-ui/context';
+import { useKeystone, useModel } from '../../../../admin-ui/context';
 import { gql, useQuery } from '../../../../admin-ui/apollo';
 import { CellContainer, CreateItemDrawer } from '../../../../admin-ui/components';
 
@@ -26,12 +26,12 @@ import { RelationshipSelect } from './RelationshipSelect';
 function LinkToRelatedItems({
   itemId,
   value,
-  list,
+  model,
   refFieldKey,
 }: {
   itemId: string | null;
   value: FieldProps<typeof controller>['value'] & { kind: 'many' | 'one' };
-  list: ListMeta;
+  model: ModelMeta;
   refFieldKey?: string;
 }) {
   function constructQuery({
@@ -60,15 +60,15 @@ function LinkToRelatedItems({
   if (value.kind === 'many') {
     const query = constructQuery({ refFieldKey, value, itemId });
     return (
-      <Button {...commonProps} as={Link} href={`/${list.path}?${query}`}>
-        View related {list.plural}
+      <Button {...commonProps} as={Link} href={`/${model.path}?${query}`}>
+        View related {model.plural}
       </Button>
     );
   }
 
   return (
-    <Button {...commonProps} as={Link} href={`/${list.path}/${value.value?.id}`}>
-      View {list.singular} details
+    <Button {...commonProps} as={Link} href={`/${model.path}/${value.value?.id}`}>
+      View {model.singular} details
     </Button>
   );
 }
@@ -81,8 +81,8 @@ export const Field = ({
   forceValidation,
 }: FieldProps<typeof controller>) => {
   const keystone = useKeystone();
-  const foreignList = useList(field.refListKey);
-  const localList = useList(field.listKey);
+  const foreignModel = useModel(field.refmodelKey);
+  const localModel = useModel(field.modelKey);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   if (value.kind === 'cards-view') {
@@ -96,8 +96,8 @@ export const Field = ({
           id={value.id}
           value={value}
           onChange={onChange}
-          foreignList={foreignList}
-          localList={localList}
+          foreignModel={foreignModel}
+          localModel={localModel}
         />
       </FieldContainer>
     );
@@ -110,9 +110,9 @@ export const Field = ({
         <FieldDescription id={`${field.path}-description`}>{field.description}</FieldDescription>
         <div>
           {value.count === 1
-            ? `There is 1 ${foreignList.singular} `
-            : `There are ${value.count} ${foreignList.plural} `}
-          linked to this {localList.singular}
+            ? `There is 1 ${foreignModel.singular} `
+            : `There are ${value.count} ${foreignModel.plural} `}
+          linked to this {localModel.singular}
         </div>
       </Stack>
     );
@@ -131,7 +131,7 @@ export const Field = ({
             aria-describedby={field.description === null ? undefined : `${field.path}-description`}
             autoFocus={autoFocus}
             isDisabled={onChange === undefined}
-            list={foreignList}
+            list={foreignModel}
             portalMenu
             state={
               value.kind === 'many'
@@ -168,12 +168,12 @@ export const Field = ({
                   setIsDrawerOpen(true);
                 }}
               >
-                Create related {foreignList.singular}
+                Create related {foreignModel.singular}
               </Button>
             )}
             {onChange !== undefined &&
               authenticatedItem.state === 'authenticated' &&
-              authenticatedItem.listKey === field.refListKey &&
+              authenticatedItem.modelKey === field.refmodelKey &&
               (value.kind === 'many'
                 ? value.value.find(x => x.id === authenticatedItem.id) === undefined
                 : value.value?.id !== authenticatedItem.id) && (
@@ -207,7 +207,7 @@ export const Field = ({
               <LinkToRelatedItems
                 itemId={value.id}
                 refFieldKey={field.refFieldKey}
-                list={foreignList}
+                model={foreignModel}
                 value={value}
               />
             )}
@@ -216,7 +216,7 @@ export const Field = ({
         {onChange !== undefined && (
           <DrawerController isOpen={isDrawerOpen}>
             <CreateItemDrawer
-              listKey={foreignList.key}
+              modelKey={foreignModel.key}
               onClose={() => {
                 setIsDrawerOpen(false);
               }}
@@ -243,14 +243,14 @@ export const Field = ({
 };
 
 export const Cell: CellComponent<typeof controller> = ({ field, item }) => {
-  const list = useList(field.refListKey);
+  const model = useModel(field.refmodelKey);
   const { colors } = useTheme();
 
   if (field.display === 'count') {
     const count = item[`${field.path}Count`] ?? 0;
     return (
       <CellContainer>
-        {count} {count === 1 ? list.singular : list.plural}
+        {count} {count === 1 ? model.singular : model.plural}
       </CellContainer>
     );
   }
@@ -273,7 +273,7 @@ export const Cell: CellComponent<typeof controller> = ({ field, item }) => {
       {displayItems.map((item, index) => (
         <Fragment key={item.id}>
           {!!index ? ', ' : ''}
-          <Link href={`/${list.path}/[id]`} as={`/${list.path}/${item.id}`} css={styles}>
+          <Link href={`/${model.path}/[id]`} as={`/${model.path}/${item.id}`} css={styles}>
             {item.label || item.id}
           </Link>
         </Fragment>
@@ -284,7 +284,7 @@ export const Cell: CellComponent<typeof controller> = ({ field, item }) => {
 };
 
 export const CardValue: CardValueComponent<typeof controller> = ({ field, item }) => {
-  const list = useList(field.refListKey);
+  const model = useModel(field.refmodelKey);
   const data = item[field.path];
   return (
     <FieldContainer>
@@ -294,7 +294,7 @@ export const CardValue: CardValueComponent<typeof controller> = ({ field, item }
         .map((item, index) => (
           <Fragment key={item.id}>
             {!!index ? ', ' : ''}
-            <Link href={`/${list.path}/[id]`} as={`/${list.path}/${item.id}`}>
+            <Link href={`/${model.path}/[id]`} as={`/${model.path}/${item.id}`}>
               {item.label || item.id}
             </Link>
           </Fragment>
@@ -343,8 +343,8 @@ type RelationshipController = FieldController<
   string
 > & {
   display: 'count' | 'cards-or-select';
-  listKey: string;
-  refListKey: string;
+  modelKey: string;
+  refmodelKey: string;
   refFieldKey?: string;
   hideCreate: boolean;
   many: boolean;
@@ -354,7 +354,7 @@ export const controller = (
   config: FieldControllerConfig<
     {
       refFieldKey?: string;
-      refListKey: string;
+      refmodelKey: string;
       many: boolean;
       hideCreate: boolean;
     } & (
@@ -391,12 +391,12 @@ export const controller = (
   return {
     refFieldKey: config.fieldMeta.refFieldKey,
     many: config.fieldMeta.many,
-    listKey: config.listKey,
+    modelKey: config.modelKey,
     path: config.path,
     label: config.label,
     description: config.description,
     display: config.fieldMeta.displayMode === 'count' ? 'count' : 'cards-or-select',
-    refListKey: config.fieldMeta.refListKey,
+    refmodelKey: config.fieldMeta.refmodelKey,
     graphqlSelection:
       config.fieldMeta.displayMode === 'count'
         ? `${config.path}Count`
@@ -479,10 +479,10 @@ export const controller = (
     },
     filter: {
       Filter: ({ onChange, value }) => {
-        const foreignList = useList(config.fieldMeta.refListKey);
+        const foreignModel = useModel(config.fieldMeta.refmodelKey);
         const { filterValues, loading } = useRelationshipFilterValues({
           value,
-          list: foreignList,
+          list: foreignModel,
         });
         const state: {
           kind: 'many';
@@ -498,7 +498,7 @@ export const controller = (
         return (
           <RelationshipSelect
             controlShouldRenderValue
-            list={foreignList}
+            list={foreignModel}
             isLoading={loading}
             isDisabled={onChange === undefined}
             state={state}
@@ -527,10 +527,10 @@ export const controller = (
         };
       },
       Label({ value }) {
-        const foreignList = useList(config.fieldMeta.refListKey);
+        const foreignModel = useModel(config.fieldMeta.refmodelKey);
         const { filterValues } = useRelationshipFilterValues({
           value,
-          list: foreignList,
+          list: foreignModel,
         });
 
         if (!filterValues.length) {
@@ -623,13 +623,13 @@ export const controller = (
   };
 };
 
-function useRelationshipFilterValues({ value, list }: { value: string; list: ListMeta }) {
+function useRelationshipFilterValues({ value, list }: { value: string; list: ModelMeta }) {
   const foreignIds = getForeignIds(value);
   const where = { id: { in: foreignIds } };
 
   const query = gql`
     query FOREIGNLIST_QUERY($where: ${list.gqlNames.whereInputName}!) {
-      items: ${list.gqlNames.listQueryName}(where: $where) {
+      items: ${list.gqlNames.modelQueryName}(where: $where) {
         id 
         ${list.labelField}
       }

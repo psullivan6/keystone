@@ -2,7 +2,7 @@ import { list } from '@keystone-6/core';
 import { select, relationship, text, timestamp } from '@keystone-6/core/fields';
 import { document } from '@keystone-6/fields-document';
 
-export const lists = {
+export const models = {
   Post: list({
     fields: {
       title: text({ validation: { isRequired: true } }),
@@ -29,7 +29,7 @@ export const lists = {
         // inline relationship which references the `Author` list.
         relationships: {
           mention: {
-            listKey: 'Author',
+            modelKey: 'Author',
             label: 'Mention', // This will display in the Admin UI toolbar behind the `+` icon
             selection: 'id name', // These fields will be available to the renderer
           },
@@ -46,7 +46,7 @@ export const lists = {
       posts: relationship({ ref: 'Post.author', many: true }),
       bio: document({
         // We want to constrain the formatting in Author bios to a limited set of options.
-        // We will allow bold, italics, unordered lists, and links.
+        // We will allow bold, italics, unordered models, and links.
         // See the document field guide for a complete list of configurable options
         formatting: {
           inlineMarks: {

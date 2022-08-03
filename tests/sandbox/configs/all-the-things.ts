@@ -90,7 +90,7 @@ export const lists = {
       file: file({ ui: { description }, storage: 'files' }),
       document: document({
         ui: { views: require.resolve('../component-blocks.tsx') },
-        relationships: { mention: { label: 'Mention', listKey: 'User' } },
+        relationships: { mention: { label: 'Mention', modelKey: 'User' } },
         formatting: true,
         layouts: [
           [1, 1],
@@ -139,5 +139,5 @@ export const lists = {
 export default config({
   db: dbConfig,
   storage: localStorageConfig,
-  lists,
+  models: lists,
 });

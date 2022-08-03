@@ -11,7 +11,7 @@ const getSchema = (field: any) => {
     initConfig(
       config({
         db: { url: 'file:./thing.db', provider: 'sqlite' },
-        lists: {
+        models: {
           Zip: list({ fields: { thing: text() } }),
           Test: list({
             fields: {
@@ -130,10 +130,10 @@ describe('Type Generation', () => {
   });
 });
 
-describe('Referenced list errors', () => {
-  test('throws when list not found', async () => {
+describe('Referenced model errors', () => {
+  test('throws when model not found', async () => {
     expect(() => getSchema(relationship({ ref: 'DoesNotExist' }))).toThrow(
-      "Unable to resolve related list 'DoesNotExist' from Test.foo"
+      "Unable to resolve related model 'DoesNotExist' from Test.foo"
     );
   });
 
@@ -141,7 +141,7 @@ describe('Referenced list errors', () => {
     getSchema(relationship({ many: true, ref: 'Zip' }));
   });
 
-  test('throws when field on list not found', async () => {
+  test('throws when field on model not found', async () => {
     expect(() => getSchema(relationship({ many: true, ref: 'Zip.bar' }))).toThrow(
       'The relationship field at Test.foo points to Zip.bar but no field at Zip.bar exists'
     );

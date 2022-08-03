@@ -6,7 +6,7 @@ export default config({
     provider: 'sqlite',
     url: process.env.DATABASE_URL || 'file:./test.db',
   },
-  lists,
+  models: lists,
   extendGraphqlSchema,
   ui: {
     getAdditionalFiles: [

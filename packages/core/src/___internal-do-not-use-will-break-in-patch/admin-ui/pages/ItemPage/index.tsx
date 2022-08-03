@@ -24,7 +24,7 @@ import { Notice } from '@keystone-ui/notice';
 import { useToasts } from '@keystone-ui/toast';
 import { Tooltip } from '@keystone-ui/tooltip';
 import { FieldLabel, TextInput } from '@keystone-ui/fields';
-import { ListMeta } from '../../../../types';
+import { ModelMeta } from '../../../../types';
 import {
   DataGetter,
   DeepNullable,
@@ -37,14 +37,14 @@ import {
 } from '../../../../admin-ui/utils';
 
 import { gql, useMutation, useQuery } from '../../../../admin-ui/apollo';
-import { useList } from '../../../../admin-ui/context';
+import { useModel } from '../../../../admin-ui/context';
 import { PageContainer, HEADER_HEIGHT } from '../../../../admin-ui/components/PageContainer';
 import { GraphQLErrorNotice } from '../../../../admin-ui/components/GraphQLErrorNotice';
 import { usePreventNavigation } from '../../../../admin-ui/utils/usePreventNavigation';
 import { BaseToolbar, ColumnLayout, ItemPageHeader } from './common';
 
 type ItemPageProps = {
-  listKey: string;
+  modelKey: string;
 };
 
 function useEventCallback<Func extends (...args: any) => any>(callback: Func): Func {
@@ -59,23 +59,23 @@ function useEventCallback<Func extends (...args: any) => any>(callback: Func): F
 }
 
 function ItemForm({
-  listKey,
+  modelKey,
   itemGetter,
   selectedFields,
   fieldModes,
   showDelete,
 }: {
-  listKey: string;
+  modelKey: string;
   itemGetter: DataGetter<ItemData>;
   selectedFields: string;
   fieldModes: Record<string, 'edit' | 'read' | 'hidden'>;
   showDelete: boolean;
 }) {
-  const list = useList(listKey);
+  const model = useModel(modelKey);
 
   const [update, { loading, error, data }] = useMutation(
-    gql`mutation ($data: ${list.gqlNames.updateInputName}!, $id: ID!) {
-      item: ${list.gqlNames.updateMutationName}(where: { id: $id }, data: $data) {
+    gql`mutation ($data: ${model.gqlNames.updateInputName}!, $id: ID!) {
+      item: ${model.gqlNames.updateMutationName}(where: { id: $id }, data: $data) {
         ${selectedFields}
       }
     }`,
@@ -89,7 +89,7 @@ function ItemForm({
     }, [data, error]) ?? itemGetter;
 
   const [state, setValue] = useState(() => {
-    const value = deserializeValue(list.fields, itemGetter);
+    const value = deserializeValue(model.fields, itemGetter);
     return { value, item: itemGetter };
   });
   if (
@@ -97,17 +97,17 @@ function ItemForm({
     state.item.data !== itemGetter.data &&
     (itemGetter.errors || []).every(x => x.path?.length !== 1)
   ) {
-    const value = deserializeValue(list.fields, itemGetter);
+    const value = deserializeValue(model.fields, itemGetter);
     setValue({ value, item: itemGetter });
   }
 
   const { changedFields, dataForUpdate } = useChangedFieldsAndDataForUpdate(
-    list.fields,
+    model.fields,
     state.item,
     state.value
   );
 
-  const invalidFields = useInvalidFields(list.fields, state.value);
+  const invalidFields = useInvalidFields(model.fields, state.value);
 
   const [forceValidation, setForceValidation] = useState(false);
   const toasts = useToasts();
@@ -132,10 +132,8 @@ function ItemForm({
           });
         } else {
           toasts.addToast({
-            // title: data.item[list.labelField] || data.item.id,
             tone: 'positive',
             title: 'Saved successfully',
-            // message: 'Saved successfully',
           });
         }
       })
@@ -143,7 +141,7 @@ function ItemForm({
         toasts.addToast({ title: 'Failed to update item', tone: 'negative', message: err.message });
       });
   });
-  const labelFieldValue = state.item.data?.[list.labelField];
+  const labelFieldValue = state.item.data?.[model.labelField];
   const itemId = state.item.data?.id!;
   const hasChangedFields = !!changedFields.size;
   usePreventNavigation(useMemo(() => ({ current: hasChangedFields }), [hasChangedFields]));
@@ -157,7 +155,7 @@ function ItemForm({
       />
       <Fields
         fieldModes={fieldModes}
-        fields={list.fields}
+        fields={model.fields}
         forceValidation={forceValidation}
         invalidFields={invalidFields}
         onChange={useCallback(
@@ -174,7 +172,7 @@ function ItemForm({
         onReset={useEventCallback(() => {
           setValue(state => ({
             item: state.item,
-            value: deserializeValue(list.fields, state.item),
+            value: deserializeValue(model.fields, state.item),
           }));
         })}
         loading={loading}
@@ -182,12 +180,12 @@ function ItemForm({
           () =>
             showDelete ? (
               <DeleteButton
-                list={list}
+                model={model}
                 itemLabel={(labelFieldValue ?? itemId) as string}
                 itemId={itemId}
               />
             ) : undefined,
-          [showDelete, list, labelFieldValue, itemId]
+          [showDelete, model, labelFieldValue, itemId]
         )}
       />
     </Box>
@@ -197,16 +195,16 @@ function ItemForm({
 function DeleteButton({
   itemLabel,
   itemId,
-  list,
+  model,
 }: {
   itemLabel: string;
   itemId: string;
-  list: ListMeta;
+  model: ModelMeta;
 }) {
   const toasts = useToasts();
   const [deleteItem, { loading }] = useMutation(
     gql`mutation ($id: ID!) {
-      ${list.gqlNames.deleteMutationName}(where: { id: $id }) {
+      ${model.gqlNames.deleteMutationName}(where: { id: $id }) {
         id
       }
     }`,
@@ -238,15 +236,15 @@ function DeleteButton({
                 await deleteItem();
               } catch (err: any) {
                 return toasts.addToast({
-                  title: `Failed to delete ${list.singular} item: ${itemLabel}`,
+                  title: `Failed to delete ${model.singular} item: ${itemLabel}`,
                   message: err.message,
                   tone: 'negative',
                 });
               }
-              router.push(`/${list.path}`);
+              router.push(`/${model.path}`);
               return toasts.addToast({
                 title: itemLabel,
-                message: `Deleted ${list.singular} item successfully`,
+                message: `Deleted ${model.singular} item successfully`,
                 tone: 'positive',
               });
             },
@@ -268,13 +266,13 @@ function DeleteButton({
 
 export const getItemPage = (props: ItemPageProps) => () => <ItemPage {...props} />;
 
-const ItemPage = ({ listKey }: ItemPageProps) => {
-  const list = useList(listKey);
+const ItemPage = ({ modelKey }: ItemPageProps) => {
+  const model = useModel(modelKey);
   const id = useRouter().query.id as string;
   const { spacing, typography } = useTheme();
 
   const { query, selectedFields } = useMemo(() => {
-    let selectedFields = Object.entries(list.fields)
+    let selectedFields = Object.entries(model.fields)
       .filter(
         ([fieldKey, field]) =>
           field.itemView.fieldMode !== 'hidden' ||
@@ -282,19 +280,19 @@ const ItemPage = ({ listKey }: ItemPageProps) => {
           fieldKey === 'id'
       )
       .map(([fieldKey]) => {
-        return list.fields[fieldKey].controller.graphqlSelection;
+        return model.fields[fieldKey].controller.graphqlSelection;
       })
       .join('\n');
     return {
       selectedFields,
       query: gql`
-        query ItemPage($id: ID!, $listKey: String!) {
-          item: ${list.gqlNames.itemQueryName}(where: {id: $id}) {
+        query ItemPage($id: ID!, $modelKey: String!) {
+          item: ${model.gqlNames.itemQueryName}(where: {id: $id}) {
             ${selectedFields}
           }
           keystone {
             adminMeta {
-              list(key: $listKey) {
+              model(key: $modelKey) {
                 hideCreate
                 hideDelete
                 fields {
@@ -309,9 +307,9 @@ const ItemPage = ({ listKey }: ItemPageProps) => {
         }
       `,
     };
-  }, [list]);
+  }, [model]);
   let { data, error, loading } = useQuery(query, {
-    variables: { id, listKey },
+    variables: { id, modelKey },
     errorPolicy: 'all',
     skip: id === undefined,
   });
@@ -322,7 +320,9 @@ const ItemPage = ({ listKey }: ItemPageProps) => {
       item: ItemData;
       keystone: {
         adminMeta: {
-          list: { fields: { path: string; itemView: { fieldMode: 'edit' | 'read' | 'hidden' } }[] };
+          model: {
+            fields: { path: string; itemView: { fieldMode: 'edit' | 'read' | 'hidden' } }[];
+          };
         };
       };
     }>
@@ -330,30 +330,30 @@ const ItemPage = ({ listKey }: ItemPageProps) => {
 
   let itemViewFieldModesByField = useMemo(() => {
     let itemViewFieldModesByField: Record<string, 'edit' | 'read' | 'hidden'> = {};
-    dataGetter.data?.keystone?.adminMeta?.list?.fields?.forEach(field => {
+    dataGetter.data?.keystone?.adminMeta?.model?.fields?.forEach(field => {
       if (field !== null && field.path !== null && field?.itemView?.fieldMode != null) {
         itemViewFieldModesByField[field.path] = field.itemView.fieldMode;
       }
     });
     return itemViewFieldModesByField;
-  }, [dataGetter.data?.keystone?.adminMeta?.list?.fields]);
+  }, [dataGetter.data?.keystone?.adminMeta?.model?.fields]);
 
   const metaQueryErrors = dataGetter.get('keystone').errors;
 
   const pageTitle: string = loading
     ? undefined
-    : (data && data.item && (data.item[list.labelField] || data.item.id)) || id;
+    : (data && data.item && (data.item[model.labelField] || data.item.id)) || id;
 
   return (
     <PageContainer
       title={pageTitle}
       header={
         <ItemPageHeader
-          list={list}
+          model={model}
           label={
             loading
               ? 'Loading...'
-              : (data && data.item && (data.item[list.labelField] || data.item.id)) || id
+              : (data && data.item && (data.item[model.labelField] || data.item.id)) || id
           }
         />
       }
@@ -386,8 +386,8 @@ const ItemPage = ({ listKey }: ItemPageProps) => {
               <ItemForm
                 fieldModes={itemViewFieldModesByField}
                 selectedFields={selectedFields}
-                showDelete={!data.keystone.adminMeta.list!.hideDelete}
-                listKey={listKey}
+                showDelete={!data.keystone.adminMeta.model!.hideDelete}
+                modelKey={modelKey}
                 itemGetter={dataGetter.get('item') as DataGetter<ItemData>}
               />
               <StickySidebar>

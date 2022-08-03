@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import { JSONValue, ListMeta } from '../../../../types';
+import { JSONValue, ModelMeta } from '../../../../types';
 import { useRouter } from '../../../../admin-ui/router';
 
 export type Filter = { field: string; type: string; value: JSONValue };
 
-export function useFilters(list: ListMeta, filterableFields: Set<string>) {
+export function useFilters(list: ModelMeta, filterableFields: Set<string>) {
   const { query } = useRouter();
   const possibleFilters = useMemo(() => {
     const possibleFilters: Record<string, { type: string; field: string }> = {};

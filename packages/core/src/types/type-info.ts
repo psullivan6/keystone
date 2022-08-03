@@ -3,7 +3,7 @@ import { BaseItem } from './next-fields';
 
 type GraphQLInput = Record<string, any>;
 
-export type BaseListTypeInfo = {
+export type BaseModelTypeInfo = {
   key: string;
   fields: string;
   item: BaseItem;
@@ -17,7 +17,10 @@ export type BaseListTypeInfo = {
   all: BaseKeystoneTypeInfo;
 };
 
-export type KeystoneContextFromListTypeInfo<ListTypeInfo extends BaseListTypeInfo> =
-  KeystoneContext<ListTypeInfo['all']>;
+export type KeystoneContextFromModelTypeInfo<ModelTypeInfo extends BaseModelTypeInfo> =
+  KeystoneContext<ModelTypeInfo['all']>;
 
-export type BaseKeystoneTypeInfo = { lists: Record<string, BaseListTypeInfo>; prisma: any };
+export type BaseKeystoneTypeInfo = {
+  models: Record<string, BaseModelTypeInfo>;
+  prisma: any;
+};

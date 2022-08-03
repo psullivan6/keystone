@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { ListMeta } from '../../../../types';
+import { ModelMeta } from '../../../../types';
 import { useRouter } from '../../../../admin-ui/router';
 
-export function useSort(list: ListMeta, orderableFields: Set<string>) {
+export function useSort(list: ModelMeta, orderableFields: Set<string>) {
   const { query } = useRouter();
   let sortByFromUrl = typeof query.sortBy === 'string' ? query.sortBy : '';
 

@@ -18,7 +18,7 @@ import { Button } from '@keystone-ui/button';
 import { Tooltip } from '@keystone-ui/tooltip';
 import { LoadingDots } from '@keystone-ui/loading';
 import { useEffect, useRef, useState } from 'react';
-import { FieldProps, ListMeta } from '../../../../../types';
+import { FieldProps, ModelMeta } from '../../../../../types';
 import {
   getRootGraphQLFieldsFromFieldController,
   makeDataGetter,
@@ -65,16 +65,16 @@ const CardContainer = forwardRefWithAs(({ mode = 'view', ...props }: CardContain
 });
 
 export function Cards({
-  localList,
+  localModel,
   field,
-  foreignList,
+  foreignModel,
   id,
   value,
   onChange,
   forceValidation,
 }: {
-  foreignList: ListMeta;
-  localList: ListMeta;
+  foreignModel: ModelMeta;
+  localModel: ModelMeta;
   id: string | null;
   value: { kind: 'cards-view' };
 } & FieldProps<typeof controller>) {
@@ -83,17 +83,17 @@ export function Cards({
     ...new Set([...displayOptions.cardFields, ...(displayOptions.inlineEdit?.fields || [])]),
   ]
     .map(fieldPath => {
-      return foreignList.fields[fieldPath].controller.graphqlSelection;
+      return foreignModel.fields[fieldPath].controller.graphqlSelection;
     })
     .join('\n');
   if (!displayOptions.cardFields.includes('id')) {
     selectedFields += '\nid';
   }
   if (
-    !displayOptions.cardFields.includes(foreignList.labelField) &&
-    foreignList.labelField !== 'id'
+    !displayOptions.cardFields.includes(foreignModel.labelField) &&
+    foreignModel.labelField !== 'id'
   ) {
-    selectedFields += `\n${foreignList.labelField}`;
+    selectedFields += `\n${foreignModel.labelField}`;
   }
 
   const {
@@ -102,7 +102,7 @@ export function Cards({
     state: itemsState,
   } = useItemState({
     selectedFields,
-    localList,
+    localModel,
     id,
     field,
   });
@@ -166,7 +166,7 @@ export function Cards({
                 } mode`}</VisuallyHidden>
                 {isEditMode ? (
                   <InlineEdit
-                    list={foreignList}
+                    model={foreignModel}
                     fields={displayOptions.inlineEdit!.fields}
                     onSave={newItemGetter => {
                       setItems({
@@ -194,7 +194,7 @@ export function Cards({
                 ) : (
                   <Stack gap="xlarge">
                     {displayOptions.cardFields.map(fieldPath => {
-                      const field = foreignList.fields[fieldPath];
+                      const field = foreignModel.fields[fieldPath];
                       const itemForField: Record<string, any> = {};
                       for (const graphqlField of getRootGraphQLFieldsFromFieldController(
                         field.controller
@@ -264,9 +264,9 @@ export function Cards({
                           tone="active"
                           css={{ textDecoration: 'none' }}
                           as={Link}
-                          href={`/${foreignList.path}/${id}`}
+                          href={`/${foreignModel.path}/${id}`}
                         >
-                          View {foreignList.singular} details
+                          View {foreignModel.singular} details
                         </Button>
                       )}
                     </Stack>
@@ -294,9 +294,9 @@ export function Cards({
               autoFocus
               controlShouldRenderValue={isLoadingLazyItems}
               isDisabled={onChange === undefined}
-              list={foreignList}
+              list={foreignModel}
               isLoading={isLoadingLazyItems}
-              placeholder={`Select a ${foreignList.singular}`}
+              placeholder={`Select a ${foreignModel.singular}`}
               portalMenu
               state={{
                 kind: 'many',
@@ -312,7 +312,7 @@ export function Cards({
                     try {
                       const { data, errors } = await client.query({
                         query: gql`query ($ids: [ID!]!) {
-                      items: ${foreignList.gqlNames.listQueryName}(where: { id: { in: $ids }}) {
+                      items: ${foreignModel.gqlNames.modelQueryName}(where: { id: { in: $ids }}) {
                         ${selectedFields}
                       }
                     }`,
@@ -368,7 +368,7 @@ export function Cards({
           <InlineCreate
             selectedFields={selectedFields}
             fields={displayOptions.inlineCreate!.fields}
-            list={foreignList}
+            list={foreignModel}
             onCancel={() => {
               onChange({ ...value, itemBeingCreated: false });
             }}
@@ -398,7 +398,7 @@ export function Cards({
                   });
                 }}
               >
-                Create {foreignList.singular}
+                Create {foreignModel.singular}
               </Button>
             )}
             {displayOptions.inlineConnect && (
@@ -411,7 +411,7 @@ export function Cards({
                   setHideConnectItemsLabel('Cancel');
                 }}
               >
-                Link existing {foreignList.singular}
+                Link existing {foreignModel.singular}
               </Button>
             )}
           </Stack>
@@ -420,8 +420,8 @@ export function Cards({
       {/* TODO: this may not be visible to the user when they invoke the save action. Maybe scroll to it? */}
       {forceValidation && (
         <Text color="red600" size="small">
-          You must finish creating and editing any related {foreignList.label.toLowerCase()} before
-          saving the {localList.singular.toLowerCase()}
+          You must finish creating and editing any related {foreignModel.label.toLowerCase()}{' '}
+          before saving the {localModel.singular.toLowerCase()}
         </Text>
       )}
     </Stack>

@@ -18,7 +18,7 @@ const COOKIE_SECRET = 'qwertyuiopasdfghjlkzxcvbmnm1234567890';
 let MAGIC_TOKEN: string;
 
 const auth = createAuth({
-  listKey: 'User',
+  model: 'User',
   identityField: 'email',
   secretField: 'password',
   sessionData: 'id name',
@@ -46,7 +46,7 @@ const auth = createAuth({
 const runner = setupTestRunner({
   config: auth.withAuth(
     apiTestConfig({
-      lists: {
+      models: {
         User: list({
           fields: {
             name: text(),

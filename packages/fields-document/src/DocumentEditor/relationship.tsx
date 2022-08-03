@@ -16,7 +16,7 @@ import { useToolbarState } from './toolbar-state';
 export type Relationships = Record<
   string,
   {
-    listKey: string;
+    modelKey: string;
     /** GraphQL fields to select when querying the field */
     selection: string | null;
     label: string;
@@ -106,7 +106,7 @@ export function RelationshipElement({
           <RelationshipSelect
             controlShouldRenderValue
             isDisabled={false}
-            list={keystone.adminMeta.lists[relationship.listKey]}
+            list={keystone.adminMeta.models[relationship.modelKey]}
             portalMenu
             state={{
               kind: 'one',

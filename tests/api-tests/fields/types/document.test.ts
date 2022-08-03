@@ -8,13 +8,13 @@ import { apiTestConfig, expectInternalServerError } from '../../utils';
 
 const runner = setupTestRunner({
   config: apiTestConfig({
-    lists: {
+    models: {
       Post: list({
         fields: {
           content: document({
             relationships: {
               mention: {
-                listKey: 'Author',
+                modelKey: 'Author',
                 label: 'Mention',
                 selection: 'id name',
               },
@@ -28,7 +28,7 @@ const runner = setupTestRunner({
           bio: document({
             relationships: {
               mention: {
-                listKey: 'Author',
+                modelKey: 'Author',
                 label: 'Mention',
                 // selection: INTENTIONALLY LEFT BLANK
               },
@@ -37,7 +37,7 @@ const runner = setupTestRunner({
           badBio: document({
             relationships: {
               mention: {
-                listKey: 'Author',
+                modelKey: 'Author',
                 label: 'Mention',
                 selection: 'bad selection',
               },
@@ -294,13 +294,13 @@ describe('Document field type', () => {
     await expect(
       setupTestEnv({
         config: apiTestConfig({
-          lists: {
+          models: {
             Post: list({
               fields: {
                 content: document({
                   relationships: {
                     mention: {
-                      listKey: 'Author',
+                      modelKey: 'Author',
                       label: 'Mention',
                       selection: 'id name',
                     },
@@ -312,14 +312,14 @@ describe('Document field type', () => {
         }),
       })
     ).rejects.toMatchInlineSnapshot(
-      `[Error: An inline relationship Mention (mention) in the field at Post.content has listKey set to "Author" but no list named "Author" exists.]`
+      `[Error: An inline relationship Mention (mention) in the field at Post.content has modelKey set to "Author" but no list named "Author" exists.]`
     );
   });
   test("an relationship on a component block prop to a list that doesn't exist throws an error", async () => {
     await expect(
       setupTestEnv({
         config: apiTestConfig({
-          lists: {
+          models: {
             Post: list({
               fields: {
                 content: document({
@@ -333,7 +333,7 @@ describe('Document field type', () => {
                             false: fields.empty(),
                             true: fields.relationship({
                               label: 'Some Relationship',
-                              listKey: 'Author',
+                              modelKey: 'Author',
                             }),
                           }),
                         }),
@@ -347,7 +347,7 @@ describe('Document field type', () => {
         }),
       })
     ).rejects.toMatchInlineSnapshot(
-      `[Error: Component block someBlock in Post.content: The relationship field at "object.something.object.blah.conditional.true" has the listKey "Author" but no list named "Author" exists.]`
+      `[Error: Component block someBlock in Post.content: The relationship field at "object.something.object.blah.conditional.true" has the modelKey "Author" but no list named "Author" exists.]`
     );
   });
 });

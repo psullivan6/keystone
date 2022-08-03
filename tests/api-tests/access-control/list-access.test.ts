@@ -160,7 +160,7 @@ describe(`List access`, () => {
       describe(mode, () => {
         listAccessVariations.forEach(access => {
           test(`'all' denied: ${JSON.stringify(access)}`, async () => {
-            const allQueryName = context.gqlNames(nameFn[mode](access)).listQueryName;
+            const allQueryName = context.gqlNames(nameFn[mode](access)).modelQueryName;
             const query = `query { ${allQueryName} { id } }`;
             const { data, errors } = await context.graphql.raw({ query });
             expect(errors).toBe(undefined);
@@ -205,7 +205,7 @@ describe(`List access`, () => {
       describe(mode, () => {
         listAccessVariations.forEach(access => {
           test(`'all' denied: ${JSON.stringify(access)}`, async () => {
-            const allQueryName = context.gqlNames(nameFn[mode](access)).listQueryName;
+            const allQueryName = context.gqlNames(nameFn[mode](access)).modelQueryName;
             const query = `query { ${allQueryName} { id } }`;
             const { data, errors } = await context.graphql.raw({ query });
             expect(errors).toBe(undefined);

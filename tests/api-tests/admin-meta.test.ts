@@ -9,7 +9,7 @@ const runner = setupTestRunner({
     ui: {
       isAccessAllowed: () => false,
     },
-    lists: { User: list({ fields: { name: text() } }) },
+    models: { User: list({ fields: { name: text() } }) },
   }),
 });
 
@@ -39,7 +39,7 @@ test(
           __typename: 'KeystoneAdminMeta',
           enableSessionItem: false,
           enableSignout: false,
-          lists: [
+          models: [
             {
               __typename: 'KeystoneAdminUIListMeta',
               description: null,
@@ -116,7 +116,7 @@ test(
 
   setupTestRunner({
     config: apiTestConfig({
-      lists: {
+      models: {
         Test: list({
           fields: { name: text() },
           ui: names,
@@ -129,7 +129,7 @@ test(
         query {
           keystone {
             adminMeta {
-              list(key: "Test") {
+              model(key: "Test") {
                 label
                 singular
                 plural
@@ -140,6 +140,6 @@ test(
         }
       `,
     });
-    expect(res.data!.keystone.adminMeta.list).toEqual(names);
+    expect(res.data!.keystone.adminMeta.model).toEqual(names);
   })
 );

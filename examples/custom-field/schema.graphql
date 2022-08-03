@@ -271,14 +271,14 @@ type KeystoneMeta {
 type KeystoneAdminMeta {
   enableSignout: Boolean!
   enableSessionItem: Boolean!
-  lists: [KeystoneAdminUIListMeta!]!
-  list(key: String!): KeystoneAdminUIListMeta
+  models: [KeystoneAdminUIListMeta!]!
+  model(key: String!): KeystoneAdminUIListMeta
 }
 
 type KeystoneAdminUIListMeta {
   key: String!
   itemQueryName: String!
-  listQueryName: String!
+  modelQueryName: String!
   hideCreate: Boolean!
   hideDelete: Boolean!
   path: String!

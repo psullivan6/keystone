@@ -244,7 +244,7 @@ function makeEditorWithChildField(
       relationships: {
         mention: {
           label: 'Mention',
-          listKey: 'User',
+          modelKey: 'User',
           selection: null,
         },
       },

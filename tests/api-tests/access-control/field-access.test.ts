@@ -54,7 +54,7 @@ describe(`Field access`, () => {
       test(`field allowed - multi: ${JSON.stringify(access)}`, async () => {
         const item = items[listKey][0];
         const fieldName = getFieldName(access);
-        const allQueryName = context.gqlNames(listKey).listQueryName;
+        const allQueryName = context.gqlNames(listKey).modelQueryName;
         await context.sudo().query[listKey].updateOne({
           where: { id: item.id },
           data: { [fieldName]: 'hello' },

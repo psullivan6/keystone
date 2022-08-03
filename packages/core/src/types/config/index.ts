@@ -16,15 +16,15 @@ import type {
 import { SessionStrategy } from '../session';
 import type { MaybePromise } from '../utils';
 import type {
-  ListSchemaConfig,
-  ListConfig,
+  ModelsConfig,
+  ModelConfig,
   MaybeSessionFunction,
   MaybeItemFunction,
   IdFieldConfig,
 } from './lists';
 import type { BaseFields } from './fields';
-import type { ListAccessControl, FieldAccessControl } from './access-control';
-import type { ListHooks } from './hooks';
+import type { ModelAccessControl, FieldAccessControl } from './access-control';
+import type { ModelHooks } from './hooks';
 
 type FileOrImage =
   // is given full file name, returns file name that will be used at
@@ -85,7 +85,9 @@ export type StorageConfig = (
   FileOrImage;
 
 export type KeystoneConfig<TypeInfo extends BaseKeystoneTypeInfo = BaseKeystoneTypeInfo> = {
-  lists: ListSchemaConfig;
+  models: ModelsConfig;
+  /** @deprecated "list" has been renamed to "models" - you should be able to make this change without needing other updates */
+  lists?: undefined;
   db: DatabaseConfig<TypeInfo>;
   ui?: AdminUIConfig<TypeInfo>;
   server?: ServerConfig<TypeInfo>;
@@ -111,13 +113,19 @@ export type KeystoneConfig<TypeInfo extends BaseKeystoneTypeInfo = BaseKeystoneT
     /** Adds the internal data structure `experimental.initialisedLists` to the context object.
      * This is not a stable API and may contain breaking changes in `patch` level releases.
      */
-    contextInitialisedLists?: boolean;
+    contextInitialisedModels?: boolean;
   };
 };
 
-// config.lists
+// config.models
 
-export type { ListSchemaConfig, ListConfig, BaseFields, MaybeSessionFunction, MaybeItemFunction };
+export type {
+  ModelsConfig,
+  ModelConfig,
+  BaseFields,
+  MaybeSessionFunction,
+  MaybeItemFunction,
+};
 
 // config.db
 
@@ -282,18 +290,18 @@ export type ImagesConfig = {
 
 // Exports from sibling packages
 
-export type { ListHooks, ListAccessControl, FieldAccessControl };
+export type { ModelHooks, ModelAccessControl, FieldAccessControl };
 
 export type {
   FieldCreateItemAccessArgs,
   FieldReadItemAccessArgs,
   FieldUpdateItemAccessArgs,
   IndividualFieldAccessControl,
-  CreateListItemAccessControl,
-  UpdateListItemAccessControl,
-  DeleteListItemAccessControl,
-  ListOperationAccessControl,
-  ListFilterAccessControl,
+  CreateModelItemAccessControl,
+  UpdateModelItemAccessControl,
+  DeleteModelItemAccessControl,
+  ModelOperationAccessControl,
+  ModelsFilterAccessControl,
 } from './access-control';
 export type { CommonFieldConfig } from './fields';
 export type { CacheHintArgs, IdFieldConfig } from './lists';

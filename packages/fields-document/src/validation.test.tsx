@@ -12,7 +12,7 @@ import { PropValidationError, validateAndNormalizeDocument } from './validation'
 const relationships: Relationships = {
   inline: {
     label: 'Inline',
-    listKey: 'Post',
+    modelKey: 'Post',
     selection: `something`,
   },
 };
@@ -27,8 +27,13 @@ const componentBlocks: Record<string, ComponentBlock> = {
     preview: () => null,
     label: '',
     schema: {
-      one: fields.relationship({ label: '', listKey: 'Post', selection: 'something' }),
-      many: fields.relationship({ label: '', listKey: 'Post', many: true, selection: 'something' }),
+      one: fields.relationship({ label: '', modelKey: 'Post', selection: 'something' }),
+      many: fields.relationship({
+        label: '',
+        modelKey: 'Post',
+        many: true,
+        selection: 'something',
+      }),
     },
   }),
   object: component({

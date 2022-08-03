@@ -6,7 +6,7 @@ import { ChevronDownIcon } from '@keystone-ui/icons/icons/ChevronDownIcon';
 import { Options, OptionPrimitive, CheckMark } from '@keystone-ui/options';
 import { Popover } from '@keystone-ui/popover';
 import { useRouter } from 'next/router';
-import { ListMeta } from '../../../../types';
+import { ModelMeta } from '../../../../types';
 import { useSelectedFields } from './useSelectedFields';
 
 function isArrayEqual(arrA: string[], arrB: string[]) {
@@ -35,17 +35,17 @@ const Option: typeof OptionPrimitive = props => {
 export const fieldSelectionOptionsComponents = { Option };
 
 export function FieldSelection({
-  list,
+  model,
   fieldModesByFieldPath,
 }: {
-  list: ListMeta;
+  model: ModelMeta;
   fieldModesByFieldPath: Record<string, 'hidden' | 'read'>;
 }) {
   const router = useRouter();
-  const selectedFields = useSelectedFields(list, fieldModesByFieldPath);
+  const selectedFields = useSelectedFields(model, fieldModesByFieldPath);
 
   const setNewSelectedFields = (selectedFields: string[]) => {
-    if (isArrayEqual(selectedFields, list.initialColumns)) {
+    if (isArrayEqual(selectedFields, model.initialColumns)) {
       const { fields: _ignore, ...otherQueryFields } = router.query;
       router.push({ query: otherQueryFields });
     } else {
@@ -57,7 +57,7 @@ export function FieldSelection({
     if (fieldModesByFieldPath[fieldPath] === 'read') {
       fields.push({
         value: fieldPath,
-        label: list.fields[fieldPath].label,
+        label: model.fields[fieldPath].label,
         isDisabled: selectedFields.size === 1 && selectedFields.has(fieldPath),
       });
     }
@@ -65,7 +65,7 @@ export function FieldSelection({
 
   return (
     <Popover
-      aria-label={`Columns options, list of column options to apply to the ${list.key} list`}
+      aria-label={`Columns options, model of column options to apply to the ${model.key} model`}
       triggerRenderer={({ triggerProps }) => {
         return (
           <Button weight="link" css={{ padding: 4 }} {...triggerProps}>

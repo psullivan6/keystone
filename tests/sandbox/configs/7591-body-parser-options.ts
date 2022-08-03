@@ -60,5 +60,5 @@ export default config({
       limit: '10mb',
     },
   },
-  lists,
+  models: lists,
 });

@@ -3,7 +3,7 @@ import { ComponentProps, useState, useMemo, useRef, useEffect, useCallback } fro
 import isDeepEqual from 'fast-deep-equal';
 import { useMutation, gql, ApolloError } from '../apollo';
 import { useKeystone } from '..';
-import { ListMeta } from '../../types';
+import { ModelMeta } from '../../types';
 import { usePreventNavigation } from './usePreventNavigation';
 import { Fields, Value } from '.';
 
@@ -17,23 +17,26 @@ type CreateItemHookResult = {
   create: () => Promise<{ id: string; label: string | null } | undefined>;
 };
 
-export function useCreateItem(list: ListMeta): CreateItemHookResult {
+export function useCreateItem(model: ModelMeta): CreateItemHookResult {
   const toasts = useToasts();
   const { createViewFieldModes } = useKeystone();
 
   const [createItem, { loading, error, data: returnedData }] = useMutation(
-    gql`mutation($data: ${list.gqlNames.createInputName}!) {
-      item: ${list.gqlNames.createMutationName}(data: $data) {
+    gql`mutation($data: ${model.gqlNames.createInputName}!) {
+      item: ${model.gqlNames.createMutationName}(data: $data) {
         id
-        label: ${list.labelField}
+        label: ${model.labelField}
     }
   }`
   );
 
   const [value, setValue] = useState(() => {
     const value: ValueWithoutServerSideErrors = {};
-    Object.keys(list.fields).forEach(fieldPath => {
-      value[fieldPath] = { kind: 'value', value: list.fields[fieldPath].controller.defaultValue };
+    Object.keys(model.fields).forEach(fieldPath => {
+      value[fieldPath] = {
+        kind: 'value',
+        value: model.fields[fieldPath].controller.defaultValue,
+      };
     });
     return value;
   });
@@ -44,7 +47,7 @@ export function useCreateItem(list: ListMeta): CreateItemHookResult {
     Object.keys(value).forEach(fieldPath => {
       const val = value[fieldPath].value;
 
-      const validateFn = list.fields[fieldPath].controller.validate;
+      const validateFn = model.fields[fieldPath].controller.validate;
       if (validateFn) {
         const result = validateFn(val);
         if (result === false) {
@@ -53,13 +56,13 @@ export function useCreateItem(list: ListMeta): CreateItemHookResult {
       }
     });
     return invalidFields;
-  }, [list, value]);
+  }, [model, value]);
 
   const [forceValidation, setForceValidation] = useState(false);
 
   const data: Record<string, any> = {};
-  Object.keys(list.fields).forEach(fieldPath => {
-    const { controller } = list.fields[fieldPath];
+  Object.keys(model.fields).forEach(fieldPath => {
+    const { controller } = model.fields[fieldPath];
     const serialized = controller.serialize(value[fieldPath].value);
     if (!isDeepEqual(serialized, controller.serialize(controller.defaultValue))) {
       Object.assign(data, serialized);
@@ -81,9 +84,11 @@ export function useCreateItem(list: ListMeta): CreateItemHookResult {
     shouldPreventNavigation,
     error,
     props: {
-      fields: list.fields,
+      fields: model.fields,
       fieldModes:
-        createViewFieldModes.state === 'loaded' ? createViewFieldModes.lists[list.key] : null,
+        createViewFieldModes.state === 'loaded'
+          ? createViewFieldModes.models[model.key]
+          : null,
       forceValidation,
       invalidFields,
       value,

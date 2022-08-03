@@ -5,7 +5,7 @@ import { Button } from '@keystone-ui/button';
 import { jsx, Stack } from '@keystone-ui/core';
 import { useToasts } from '@keystone-ui/toast';
 import { useCallback, useState } from 'react';
-import { ListMeta } from '../../../../../types';
+import { ModelMeta } from '../../../../../types';
 import {
   deserializeValue,
   ItemData,
@@ -21,24 +21,24 @@ import { useFieldsObj } from './useItemState';
 
 export function InlineEdit({
   fields,
-  list,
+  model,
   selectedFields,
   itemGetter,
   onCancel,
   onSave,
 }: {
   fields: readonly string[];
-  list: ListMeta;
+  model: ModelMeta;
   selectedFields: string;
   itemGetter: DataGetter<ItemData>;
   onCancel: () => void;
   onSave: (newItemGetter: DataGetter<ItemData>) => void;
 }) {
-  const fieldsObj = useFieldsObj(list, fields);
+  const fieldsObj = useFieldsObj(model, fields);
 
   const [update, { loading, error }] = useMutation(
-    gql`mutation ($data: ${list.gqlNames.updateInputName}!, $id: ID!) {
-          item: ${list.gqlNames.updateMutationName}(where: { id: $id }, data: $data) {
+    gql`mutation ($data: ${model.gqlNames.updateInputName}!, $id: ID!) {
+          item: ${model.gqlNames.updateMutationName}(where: { id: $id }, data: $data) {
             ${selectedFields}
           }
         }`,
@@ -96,7 +96,7 @@ export function InlineEdit({
               });
             } else {
               toasts.addToast({
-                title: data.item[list.labelField] || data.item.id,
+                title: data.item[model.labelField] || data.item.id,
                 tone: 'positive',
                 message: 'Saved successfully',
               });

@@ -26,7 +26,7 @@ const defaultAccess = ({ context }: { context: KeystoneContext }) => !!context.s
 
 function setup(options?: any) {
   const auth = createAuth({
-    listKey: 'User',
+    model: 'User',
     identityField: 'email',
     secretField: 'password',
     sessionData: 'id name email isAdmin',
@@ -36,7 +36,7 @@ function setup(options?: any) {
   return setupTestRunner({
     config: auth.withAuth(
       apiTestConfig({
-        lists: {
+        models: {
           Post: list({
             fields: {
               title: text(),

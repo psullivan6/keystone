@@ -7,7 +7,7 @@ import { RefObject, useEffect, useMemo, useState, createContext, useContext, use
 import { jsx } from '@keystone-ui/core';
 import { MultiSelect, Select, selectComponents } from '@keystone-ui/fields';
 import { validate as validateUUID } from 'uuid';
-import { IdFieldConfig, ListMeta } from '../../../../types';
+import { IdFieldConfig, ModelMeta } from '../../../../types';
 import {
   ApolloClient,
   gql,
@@ -56,7 +56,7 @@ function useDebouncedValue<T>(value: T, limitMs: number): T {
   return debouncedValue;
 }
 
-function useFilter(search: string, list: ListMeta) {
+function useFilter(search: string, list: ModelMeta) {
   return useMemo(() => {
     let conditions: Record<string, any>[] = [];
     if (search.length) {
@@ -111,7 +111,7 @@ export const RelationshipSelect = ({
   controlShouldRenderValue: boolean;
   isDisabled: boolean;
   isLoading?: boolean;
-  list: ListMeta;
+  list: ModelMeta;
   placeholder?: string;
   portalMenu?: true | undefined;
   state:
@@ -139,12 +139,12 @@ export const RelationshipSelect = ({
     { where: Record<string, any>; take: number; skip: number }
   > = gql`
     query RelationshipSelect($where: ${list.gqlNames.whereInputName}!, $take: Int!, $skip: Int!) {
-      items: ${list.gqlNames.listQueryName}(where: $where, take: $take, skip: $skip) {
+      items: ${list.gqlNames.modelQueryName}(where: $where, take: $take, skip: $skip) {
         ${idField}: id
         ${labelField}: ${list.labelField}
         ${extraSelection}
       }
-      count: ${list.gqlNames.listQueryCountName}(where: $where)
+      count: ${list.gqlNames.modelQueryCountName}(where: $where)
     }
   `;
 
@@ -162,7 +162,7 @@ export const RelationshipSelect = ({
           typePolicies: {
             Query: {
               fields: {
-                [list.gqlNames.listQueryName]: {
+                [list.gqlNames.modelQueryName]: {
                   keyArgs: ['where'],
                   merge: (existing: readonly unknown[], incoming: readonly unknown[], { args }) => {
                     const merged = existing ? existing.slice() : [];
@@ -178,7 +178,7 @@ export const RelationshipSelect = ({
           },
         }),
       }),
-    [link, list.gqlNames.listQueryName]
+    [link, list.gqlNames.modelQueryName]
   );
 
   const { data, error, loading, fetchMore } = useQuery(QUERY, {
@@ -209,7 +209,7 @@ export const RelationshipSelect = ({
   const [lastFetchMore, setLastFetchMore] = useState<{
     where: Record<string, any>;
     extraSelection: string;
-    list: ListMeta;
+    list: ModelMeta;
     skip: number;
   } | null>(null);
 
@@ -231,7 +231,7 @@ export const RelationshipSelect = ({
           { where: Record<string, any>; take: number; skip: number }
         > = gql`
               query RelationshipSelectMore($where: ${list.gqlNames.whereInputName}!, $take: Int!, $skip: Int!) {
-                items: ${list.gqlNames.listQueryName}(where: $where, take: $take, skip: $skip) {
+                items: ${list.gqlNames.modelQueryName}(where: $where, take: $take, skip: $skip) {
                   ${labelField}: ${list.labelField}
                   ${idField}: id
                   ${extraSelection}
