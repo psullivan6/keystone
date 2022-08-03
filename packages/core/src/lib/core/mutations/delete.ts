@@ -19,7 +19,7 @@ async function deleteSingle(
   // Operation level access control
   if (!operationAccess) {
     throw accessDeniedError(
-      `You cannot perform the 'delete' operation on the list '${list.modelKey}'.`
+      `You cannot perform the 'delete' operation on the model '${list.modelKey}'.`
     );
   }
 

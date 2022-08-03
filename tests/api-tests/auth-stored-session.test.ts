@@ -202,7 +202,7 @@ describe('Auth testing', () => {
         expectAccessDenied(errors, [
           {
             path: ['createPost'],
-            msg: "You cannot perform the 'create' operation on the list 'Post'.",
+            msg: "You cannot perform the 'create' operation on the model 'Post'.",
           },
         ]);
       })

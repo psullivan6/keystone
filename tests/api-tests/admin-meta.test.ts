@@ -92,7 +92,7 @@ test(
               key: 'User',
               label: 'Users',
               labelField: 'name',
-              listQueryName: 'Users',
+              modelQueryName: 'Users',
               pageSize: 50,
               path: 'users',
               plural: 'Users',

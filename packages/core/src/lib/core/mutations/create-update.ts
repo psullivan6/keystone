@@ -39,7 +39,7 @@ async function createSingle(
   // Operation level access control
   if (!operationAccess) {
     throw accessDeniedError(
-      `You cannot perform the 'create' operation on the list '${list.modelKey}'.`
+      `You cannot perform the 'create' operation on the model '${list.modelKey}'.`
     );
   }
 
