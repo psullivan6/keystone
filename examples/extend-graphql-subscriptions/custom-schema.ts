@@ -14,18 +14,18 @@ if (process.env.NODE_ENV !== 'production') globalThis.graphqlSubscriptionPubSub 
 export const extendGraphqlSchema = graphQLSchemaExtension({
   // Add the Subscription type to the graphql schema
   typeDefs: `
-      type Mutation {
-        """ Publish a post """
-        publishPost(id: ID!): Post
-      }
+    type Mutation {
+      """ Publish a post """
+      publishPost(id: ID!): Post
+    }
 
-      type PostFeed {
-        id: ID!
-        publishDate: String!
-      }
-		  type Subscription {
-			  postPublished: Post
-		  }`,
+    type PostFeed {
+      id: ID!
+      publishDate: String!
+    }
+    type Subscription {
+      postPublished: Post
+    }`,
 
   resolvers: {
     Mutation: {
