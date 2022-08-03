@@ -248,7 +248,7 @@ type Mutation {
   ): AuthorAuthenticationWithPasswordSuccess!
 
   """
-   Publish a post
+  Publish a post
   """
   publishPost(id: ID!): Post
 }
