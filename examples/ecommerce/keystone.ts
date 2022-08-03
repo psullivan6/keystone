@@ -22,7 +22,7 @@ const sessionConfig = {
 };
 
 const { withAuth } = createAuth({
-  listKey: 'User',
+  model: 'User',
   identityField: 'email',
   secretField: 'password',
   initFirstItem: {
@@ -56,7 +56,7 @@ export default withAuth(
         }
       },
     },
-    lists: {
+    models: {
       // Schema items go in here
       User,
       Product,

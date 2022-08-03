@@ -1,6 +1,6 @@
 export type Session = {
   itemId: string;
-  listKey: string;
+  model: string;
   data: {
     name: string;
     role?: {

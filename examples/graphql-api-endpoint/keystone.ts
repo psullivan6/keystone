@@ -2,7 +2,7 @@ import { statelessSessions } from '@keystone-6/core/session';
 
 import { config } from '@keystone-6/core';
 import { createAuth } from '@keystone-6/auth';
-import { lists } from './schema';
+import { models } from './schema';
 
 let sessionSecret = process.env.SESSION_SECRET;
 
@@ -17,7 +17,7 @@ if (!sessionSecret) {
 let sessionMaxAge = 60 * 60 * 24 * 30; // 30 days
 
 const auth = createAuth({
-  listKey: 'User',
+  model: 'User',
   identityField: 'email',
   secretField: 'password',
   initFirstItem: {
@@ -39,7 +39,7 @@ export default auth.withAuth(
     ui: {
       isAccessAllowed: context => !!context.session,
     },
-    lists,
+    models,
     session: statelessSessions({ maxAge: sessionMaxAge, secret: sessionSecret }),
   })
 );

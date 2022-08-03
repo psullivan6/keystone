@@ -12,7 +12,7 @@ import { isSignedIn, permissions, rules } from './access';
   - All users can see and manage todo items assigned to themselves
 */
 
-export const lists = {
+export const models = {
   Todo: list({
     /*
       SPEC
@@ -159,7 +159,7 @@ export const lists = {
             // check the canManageAllTodos permission here
             fieldMode: args => (permissions.canManageAllTodos(args) ? 'edit' : 'hidden'),
           },
-          // Todo lists can be potentially quite large, so it's impractical to edit this field in
+          // Todo models can be potentially quite large, so it's impractical to edit this field in
           // the item view. Always set it to read mode.
           itemView: { fieldMode: 'read' },
         },

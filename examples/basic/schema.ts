@@ -17,7 +17,7 @@ import * as Keystone from '.keystone/types';
 type AccessArgs = {
   session?: {
     itemId?: string;
-    listKey?: string;
+    model?: string;
     data: {
       name?: string;
       isAdmin: boolean;
@@ -32,7 +32,7 @@ export const access = {
 
 const randomNumber = () => Math.round(Math.random() * 10);
 
-const User: Keystone.Lists.User = list({
+const User: Keystone.Models.User = list({
   ui: {
     listView: {
       initialColumns: ['name', 'posts', 'avatar'],
@@ -48,7 +48,7 @@ const User: Keystone.Lists.User = list({
     attachment: file({ storage: 'my_files' }),
     /** Used to log in. */
     password: password(),
-    /** Administrators have more access to various lists and fields. */
+    /** Administrators have more access to various models and fields. */
     isAdmin: checkbox({
       access: {
         read: access.isAdmin,
@@ -91,7 +91,7 @@ const User: Keystone.Lists.User = list({
   },
 });
 
-export const lists: Keystone.Lists = {
+export const models: Keystone.Models = {
   User,
   PhoneNumber: list({
     ui: {
@@ -152,7 +152,7 @@ export const lists: Keystone.Lists = {
         relationships: {
           mention: {
             label: 'Mention',
-            listKey: 'User',
+            modelKey: 'User',
           },
         },
         formatting: true,

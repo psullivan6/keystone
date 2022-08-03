@@ -1,7 +1,7 @@
 import { config } from '@keystone-6/core';
 import { statelessSessions } from '@keystone-6/core/session';
 import { createAuth } from '@keystone-6/auth';
-import { lists } from './schema';
+import { models } from './schema';
 
 /**
  * TODO: Implement validateItem. Would be invoked by the getItem() method in
@@ -16,7 +16,7 @@ let sessionMaxAge = 60 * 60 * 24 * 30; // 30 days
 // management and access control are controlled independently in the main keystone config.
 const { withAuth } = createAuth({
   // This is the list that contains items people can sign in as
-  listKey: 'User',
+  model: 'User',
   // The identity field is typically a username or email address
   identityField: 'email',
   // The secret field must be a password type field
@@ -63,10 +63,10 @@ export default withAuth(
       provider: 'sqlite',
       url: process.env.DATABASE_URL || 'file:./keystone-example.db',
     },
-    lists,
+    models,
     ui: {},
     session:
-      // Stateless sessions will store the listKey and itemId of the signed-in user in a cookie
+      // Stateless sessions will store the modelKey and itemId of the signed-in user in a cookie
       statelessSessions({
         // The maxAge option controls how long session cookies are valid for before they expire
         maxAge: sessionMaxAge,
