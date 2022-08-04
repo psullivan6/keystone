@@ -12,8 +12,7 @@ export const staticAdminMetaQuery = gql`
         models {
           __typename
           key
-          itemQueryName
-          modelQueryName
+          graphqlPlural
           initialSort {
             __typename
             field
@@ -73,8 +72,7 @@ export type StaticAdminMetaQuery = {
       models: Array<{
         __typename: 'KeystoneAdminUIModelMeta';
         key: string;
-        itemQueryName: string;
-        modelQueryName: string;
+        graphqlPlural: string;
         path: string;
         label: string;
         singular: string;
