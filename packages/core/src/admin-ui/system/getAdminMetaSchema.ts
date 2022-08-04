@@ -263,7 +263,7 @@ export function getAdminMetaSchema({
     name: 'KeystoneAdminUIModelMeta',
     fields: {
       key: graphql.field({ type: graphql.nonNull(graphql.String) }),
-      modelQueryName: graphql.field({
+      graphqlPlural: graphql.field({
         type: graphql.nonNull(graphql.String),
       }),
       hideCreate: graphql.field({

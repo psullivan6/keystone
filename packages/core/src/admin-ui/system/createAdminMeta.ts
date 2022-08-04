@@ -72,7 +72,7 @@ export function createAdminMeta(
           | undefined) ?? null,
       // TODO: probably remove this from the GraphQL schema and here
       itemQueryName: key,
-      modelQueryName: model.pluralGraphQLName,
+      graphqlPlural: model.pluralGraphQLName,
     };
     adminMetaRoot.models.push(adminMetaRoot.modelByKey[key]);
   }

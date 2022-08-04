@@ -181,7 +181,7 @@ export type ModelMetaRootVal = {
   initialSort: { field: string; direction: 'ASC' | 'DESC' } | null;
   fields: Array<FieldMetaRootVal>;
   itemQueryName: string;
-  modelQueryName: string;
+  graphqlPlural: string;
   description: string | null;
 };
 

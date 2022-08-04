@@ -277,8 +277,7 @@ type KeystoneAdminMeta {
 
 type KeystoneAdminUIModelMeta {
   key: String!
-  itemQueryName: String!
-  modelQueryName: String!
+  graphqlPlural: String!
   hideCreate: Boolean!
   hideDelete: Boolean!
   path: String!
