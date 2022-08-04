@@ -114,7 +114,7 @@ describe('Auth testing', () => {
       expectAccessDenied(result.errors, [
         {
           path: ['updateUser'],
-          msg: "You cannot perform the 'update' operation on the list 'User'.",
+          msg: "You cannot perform the 'update' operation on the model 'User'.",
         },
       ]);
     })
