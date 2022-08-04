@@ -73,7 +73,7 @@ export function useAdminMeta(adminMetaHash: string, fieldViews: FieldViews) {
         ...model,
         gqlNames: getGqlNames({
           modelKey: model.key,
-          pluralGraphQLName: model.modelQueryName,
+          pluralGraphQLName: model.graphqlPlural,
         }),
         fields: {},
       };
