@@ -1,5 +1,13 @@
 # @keystone-6/example-document-field
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [[`713e0f47e`](https://github.com/keystonejs/keystone/commit/713e0f47e021c7cfc0d7f9585f72840ab3552b5b), [`713e0f47e`](https://github.com/keystonejs/keystone/commit/713e0f47e021c7cfc0d7f9585f72840ab3552b5b), [`6cb00be9a`](https://github.com/keystonejs/keystone/commit/6cb00be9afe8a77aaee9a2ff1d98d42b276889db), [`0ea56667f`](https://github.com/keystonejs/keystone/commit/0ea56667f43852db35457de99d4c05833e147a50), [`bf70aa64d`](https://github.com/keystonejs/keystone/commit/bf70aa64dad1c62672a82ef5be8efc2203a96029), [`99d8f062e`](https://github.com/keystonejs/keystone/commit/99d8f062e5e7d86664d6ab3802a35e2e4c32f61a), [`da0c197c7`](https://github.com/keystonejs/keystone/commit/da0c197c7de32d62083357b0831cba43b447a621), [`713e0f47e`](https://github.com/keystonejs/keystone/commit/713e0f47e021c7cfc0d7f9585f72840ab3552b5b), [`36ed1e7e1`](https://github.com/keystonejs/keystone/commit/36ed1e7e14b857a14068685c3eda24b3203379d2), [`d2483bb4b`](https://github.com/keystonejs/keystone/commit/d2483bb4b1ad58533d86718753c20e0d21d6ee58), [`1d24916b8`](https://github.com/keystonejs/keystone/commit/1d24916b828af5e0d1bd49c56cf75b0086fe3414)]:
+  - @keystone-6/core@2.2.0
+  - @keystone-6/fields-document@5.0.0
+
 ## 0.0.5
 
 ### Patch Changes

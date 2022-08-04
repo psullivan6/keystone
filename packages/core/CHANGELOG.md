@@ -1,5 +1,27 @@
 # @keystone-6/core
 
+## 2.2.0
+
+### Minor Changes
+
+- [#7752](https://github.com/keystonejs/keystone/pull/7752) [`0ea56667f`](https://github.com/keystonejs/keystone/commit/0ea56667f43852db35457de99d4c05833e147a50) Thanks [@Achisingh](https://github.com/Achisingh)! - Adds `ui.displayMode: 'radio'` as an option for the select field.
+
+* [#7658](https://github.com/keystonejs/keystone/pull/7658) [`da0c197c7`](https://github.com/keystonejs/keystone/commit/da0c197c7de32d62083357b0831cba43b447a621) Thanks [@Achisingh](https://github.com/Achisingh)! - Added `calendarDay` field to store a date without a time or timezone attached
+
+- [#5175](https://github.com/keystonejs/keystone/pull/5175) [`d2483bb4b`](https://github.com/keystonejs/keystone/commit/d2483bb4b1ad58533d86718753c20e0d21d6ee58) Thanks [@MurzNN](https://github.com/MurzNN)! - Adds a new `bigInt` field type, an integer of width 8 bytes (64 bits), analogous with Prisma's `BigInt`.
+
+### Patch Changes
+
+- [#7744](https://github.com/keystonejs/keystone/pull/7744) [`713e0f47e`](https://github.com/keystonejs/keystone/commit/713e0f47e021c7cfc0d7f9585f72840ab3552b5b) Thanks [@mitchellhamilton](https://github.com/mitchellhamilton)! - Pins `@types/graphql-upload` to `8.0.7`
+
+* [#7744](https://github.com/keystonejs/keystone/pull/7744) [`713e0f47e`](https://github.com/keystonejs/keystone/commit/713e0f47e021c7cfc0d7f9585f72840ab3552b5b) Thanks [@mitchellhamilton](https://github.com/mitchellhamilton)! - Pins `pirates` to `4.0.4`
+
+- [#7731](https://github.com/keystonejs/keystone/pull/7731) [`bf70aa64d`](https://github.com/keystonejs/keystone/commit/bf70aa64dad1c62672a82ef5be8efc2203a96029) Thanks [@nderkim](https://github.com/nderkim)! - Fix return type of findOne to include null, which is returned if no item is found
+
+* [#7744](https://github.com/keystonejs/keystone/pull/7744) [`713e0f47e`](https://github.com/keystonejs/keystone/commit/713e0f47e021c7cfc0d7f9585f72840ab3552b5b) Thanks [@mitchellhamilton](https://github.com/mitchellhamilton)! - Updates `@apollo/client` to `3.6.9`
+
+- [#7742](https://github.com/keystonejs/keystone/pull/7742) [`1d24916b8`](https://github.com/keystonejs/keystone/commit/1d24916b828af5e0d1bd49c56cf75b0086fe3414) Thanks [@mitchellhamilton](https://github.com/mitchellhamilton)! - Updates `@graphql-ts/schema` to `0.5.3`
+
 ## 2.1.0
 
 ### Minor Changes
