@@ -1,5 +1,6 @@
 // very loosely based on https://github.com/ianstormtaylor/slate/blob/d22c76ae1313fe82111317417912a2670e73f5c9/site/examples/paste-html.tsx
-import { Node } from 'slate';
+import { Descendant, Node } from 'slate';
+import { isNonEmptyArray } from 'emery/guards';
 import { Block, isBlock } from '..';
 import { Mark } from '../utils';
 import {
@@ -8,6 +9,7 @@ import {
   forceDisableMarkForChildren,
   setLinkForChildren,
   InlineFromExternalPaste,
+  onlyWhitespacePattern,
 } from './utils';
 
 function getAlignmentFromElement(element: globalThis.Element): 'center' | 'end' | undefined {
@@ -33,28 +35,16 @@ function getAlignmentFromElement(element: globalThis.Element): 'center' | 'end' 
   }
 }
 
-// See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types
-type DistributiveOmit<T, K extends keyof any> = T extends any ? Omit<T, K> : never;
-
-const BLOCK_TAGS: Record<
-  string,
-  (element: globalThis.Element) => DistributiveOmit<Block, 'children'> & { children?: undefined }
-> = {
-  BLOCKQUOTE: () => ({ type: 'blockquote' }),
-  H1: el => ({ type: 'heading', level: 1, textAlign: getAlignmentFromElement(el) }),
-  H2: el => ({ type: 'heading', level: 2, textAlign: getAlignmentFromElement(el) }),
-  H3: el => ({ type: 'heading', level: 3, textAlign: getAlignmentFromElement(el) }),
-  H4: el => ({ type: 'heading', level: 4, textAlign: getAlignmentFromElement(el) }),
-  H5: el => ({ type: 'heading', level: 5, textAlign: getAlignmentFromElement(el) }),
-  H6: el => ({ type: 'heading', level: 6, textAlign: getAlignmentFromElement(el) }),
-  LI: () => ({ type: 'list-item' }),
-  OL: () => ({ type: 'ordered-list' }),
-  P: el => ({ type: 'paragraph', textAlign: getAlignmentFromElement(el) }),
-  PRE: () => ({ type: 'code' }),
-  UL: () => ({ type: 'unordered-list' }),
+const headings: Record<string, (Node & { type: 'heading' })['level'] | undefined> = {
+  H1: 1,
+  H2: 2,
+  H3: 3,
+  H4: 4,
+  H5: 5,
+  H6: 6,
 };
 
-const TEXT_TAGS: Record<string, Mark> = {
+const TEXT_TAGS: Record<string, Mark | undefined> = {
   CODE: 'code',
   DEL: 'strikethrough',
   S: 'strikethrough',
@@ -118,20 +108,86 @@ export function deserializeHTML(html: string) {
   return deserializeHTMLNode(parsed.body);
 }
 
-export function deserializeHTMLNode(el: globalThis.Node): (InlineFromExternalPaste | Block)[] {
+type Inlines = [InlineFromExternalPaste, ...InlineFromExternalPaste[]];
+
+function deserializeLeafHTMLNodeToInline(el: globalThis.Node): Inlines | undefined {
   if (el instanceof globalThis.Text) {
-    const text = el.textContent;
+    const text = el.data;
     if (!text) {
-      return [];
+      return [{ text: '' }];
     }
     return getInlineNodes(text);
+  }
+  if (el.nodeName === 'BR') {
+    return getInlineNodes('\n');
+  }
+}
+
+function hasNonWhitespaceContent(node: Descendant) {
+  if (node.type === undefined) {
+    return !onlyWhitespacePattern.test(node.text);
+  }
+  return node.children.some(hasNonWhitespaceContent);
+}
+
+function deserializeNodesToInline(nodes: Iterable<globalThis.Node>): Inlines {
+  const output: InlineFromExternalPaste[] = [];
+  let nextShouldHaveNewline = false;
+  for (const child of nodes) {
+    if (blockNodeNames.has(child.nodeName)) {
+      nextShouldHaveNewline = true;
+    }
+    const content = deserializeToInline(child);
+    if (nextShouldHaveNewline && content.some(hasNonWhitespaceContent)) {
+      output.push(...getInlineNodes('\n'));
+      nextShouldHaveNewline = false;
+    }
+    output.push(...content);
+  }
+  if (isNonEmptyArray(output)) {
+    return output;
+  }
+  return [{ text: '' }];
+}
+
+const blockNodeNames = new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'DIV', 'BLOCKQUOTE']);
+
+function deserializeToInline(el: globalThis.Node): Inlines {
+  const leaf = deserializeLeafHTMLNodeToInline(el);
+  if (leaf !== undefined) {
+    return leaf;
+  }
+  if (el instanceof globalThis.Element && el.nodeName === 'A') {
+    const href = el.getAttribute('href');
+    if (href) {
+      return setLinkForChildren(href, () =>
+        forceDisableMarkForChildren('underline', () => deserializeNodesToInline(el.childNodes))
+      );
+    }
+  }
+
+  if (el.nodeName === 'PRE' && el.textContent) {
+    return [{ text: el.textContent }];
+  }
+  const marks = marksFromElementAttributes(el);
+  return addMarksToChildren(marks, () => deserializeNodesToInline(el.childNodes));
+}
+
+type DeserializedNode = InlineFromExternalPaste | Block;
+
+type DeserializedNodes = [DeserializedNode, ...DeserializedNode[]];
+
+export function deserializeHTMLNode(el: globalThis.Node): DeserializedNode[] {
+  const leaf = deserializeLeafHTMLNodeToInline(el);
+  if (leaf !== undefined) {
+    return leaf;
   }
   if (!(el instanceof globalThis.Element)) {
     return [];
   }
-  let { nodeName } = el;
-  if (nodeName === 'BR') {
-    return getInlineNodes('\n');
+
+  if (el.nodeName === 'HR') {
+    return [{ type: 'divider', children: [{ text: '' }] }];
   }
 
   const marks = marksFromElementAttributes(el);
@@ -139,10 +195,14 @@ export function deserializeHTMLNode(el: globalThis.Node): (InlineFromExternalPas
   // Dropbox Paper displays blockquotes as lists for some reason
   if (el.classList.contains('listtype-quote')) {
     marks.delete('italic');
-    nodeName = 'BLOCKQUOTE';
+    return addMarksToChildren(marks, () => [
+      { type: 'blockquote', children: deserializeChildren(el.childNodes) },
+    ]);
   }
 
-  return addMarksToChildren(marks, () => {
+  return addMarksToChildren(marks, (): DeserializedNodes => {
+    const { nodeName } = el;
+
     if (nodeName === 'A') {
       const href = el.getAttribute('href');
       if (href) {
@@ -152,19 +212,54 @@ export function deserializeHTMLNode(el: globalThis.Node): (InlineFromExternalPas
       }
     }
 
-    if (nodeName === 'HR') {
-      return [{ type: 'divider', children: [{ text: '' }] }];
+    if (nodeName === 'LI') {
+      const listItemContent: (InlineFromExternalPaste | Block)[] = [];
+
+      let nestedList: DeserializedNode[] = [];
+      for (const node of el.childNodes) {
+        if (node.nodeName === 'UL' || node.nodeName === 'OL') {
+          nestedList = deserializeHTMLNode(node);
+          continue;
+        }
+        listItemContent.push(...deserializeToInline(node));
+      }
+      const children = isNonEmptyArray(listItemContent) ? listItemContent : [{ text: '' }];
+
+      return [
+        { type: 'list-item', children: [{ type: 'list-item-content', children }, ...nestedList] },
+      ];
     }
 
-    if (BLOCK_TAGS[nodeName]) {
-      const node = BLOCK_TAGS[nodeName](el);
-      return [{ ...node, children: deserializeChildren(el.childNodes) }];
+    const children = deserializeChildren(el.childNodes);
+
+    if (nodeName === 'P') {
+      return [{ type: 'paragraph', textAlign: getAlignmentFromElement(el), children }];
     }
-    return deserializeChildren(el.childNodes);
+
+    const headingLevel = headings[nodeName];
+
+    if (typeof headingLevel === 'number') {
+      return [
+        { type: 'heading', level: headingLevel, textAlign: getAlignmentFromElement(el), children },
+      ];
+    }
+    if (nodeName === 'PRE' && el.textContent) {
+      return [{ type: 'code', children: [{ text: el.textContent || '' }] }];
+    }
+    if (nodeName === 'BLOCKQUOTE') {
+      return [{ type: 'blockquote', children }];
+    }
+    if (nodeName === 'OL') {
+      return [{ type: 'ordered-list', children }];
+    }
+    if (nodeName === 'UL') {
+      return [{ type: 'unordered-list', children }];
+    }
+    return children;
   });
 }
 
-function deserializeChildren(nodes: Iterable<globalThis.Node>) {
+function deserializeChildren(nodes: Iterable<globalThis.Node>): DeserializedNodes {
   const outputNodes: (InlineFromExternalPaste | Block)[] = [];
   for (const node of nodes) {
     outputNodes.push(...deserializeHTMLNode(node));
@@ -178,7 +273,9 @@ function deserializeChildren(nodes: Iterable<globalThis.Node>) {
     // we want to ignore whitespace between block level elements
     // useful info about whitespace in html:
     // https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace
-    return outputNodes.filter(node => isBlock(node) || Node.string(node).trim() !== '');
+    return outputNodes.filter(
+      node => isBlock(node) || Node.string(node).trim() !== ''
+    ) as DeserializedNodes;
   }
-  return outputNodes;
+  return outputNodes as DeserializedNodes;
 }

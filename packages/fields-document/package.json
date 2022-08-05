@@ -39,6 +39,7 @@
     "@types/react": "^18.0.9",
     "apollo-server-errors": "^3.3.0",
     "apply-ref": "^1.0.0",
+    "emery": "^1.4.1",
     "fp-ts": "^2.11.5",
     "graphql": "^15.8.0",
     "io-ts": "^2.2.16",

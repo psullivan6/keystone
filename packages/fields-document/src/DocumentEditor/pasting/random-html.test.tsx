@@ -160,3 +160,39 @@ test('marks around blocks turn into marks around text', () => {
     </editor>
   `);
 });
+
+test('list items', () => {
+  expect(
+    htmlToEditor('<ul><li>blah<strong> this is bold</strong><ul><li>inner</li></ul></li></ul>')
+  ).toMatchInlineSnapshot(`
+    <editor>
+      <unordered-list>
+        <list-item>
+          <list-item-content>
+            <text>
+              blah
+            </text>
+            <text
+              bold={true}
+            >
+               this is bold
+            </text>
+          </list-item-content>
+          <unordered-list>
+            <list-item>
+              <list-item-content>
+                <text>
+                  inner
+                  <cursor />
+                </text>
+              </list-item-content>
+            </list-item>
+          </unordered-list>
+        </list-item>
+      </unordered-list>
+      <paragraph>
+        <text />
+      </paragraph>
+    </editor>
+  `);
+});

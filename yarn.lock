@@ -6597,6 +6597,11 @@ electron-to-chromium@^1.4.202:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.206.tgz#580ff85b54d7ec0c05f20b1e37ea0becdd7b0ee4"
   integrity sha512-h+Fadt1gIaQ06JaIiyqPsBjJ08fV5Q7md+V8bUvQW/9OvXfL2LRICTz2EcnnCP7QzrFTS6/27MRV6Bl9Yn97zA==
 
+emery@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/emery/-/emery-1.4.1.tgz#2933c855fc4acee28025765302770a8464b203d3"
+  integrity sha512-i5MU9HbnbFdKLJCT7QIfZHMFtzWmVhK1Ge4zjCmrlHum3GxKakzttC4tZItZYRbJeOGUqRwarThxdqVYnokMeg==
+
 emittery@^0.10.2:
   version "0.10.2"
   resolved "https://registry.yarnpkg.com/emittery/-/emittery-0.10.2.tgz#902eec8aedb8c41938c46e9385e9db7e03182933"
