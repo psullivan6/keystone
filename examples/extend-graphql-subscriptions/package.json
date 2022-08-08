@@ -10,7 +10,7 @@
     "start": "keystone start"
   },
   "dependencies": {
-    "@apollo/client": "^3.6.9",
+    "@apollo/client": "3.6.9",
     "@emotion/css": "^11.7.1",
     "@keystone-6/auth": "^4.0.0",
     "@keystone-6/core": "^2.1.0",
