@@ -26,6 +26,7 @@ const styles = {
     padding: 1rem;
   `,
 };
+// Setup the TIME subscription
 const TIME = gql`
   subscription TIME {
     time {
@@ -33,8 +34,10 @@ const TIME = gql`
     }
   }
 `;
-const PUBLISHED_POST = gql`
-  subscription PUBLISHED_POST {
+
+// Setup the Post subscription
+const POST_PUBLISHED = gql`
+  subscription POST_PUBLISHED {
     postPublished {
       id
       title
@@ -42,11 +45,14 @@ const PUBLISHED_POST = gql`
     }
   }
 `;
-
+// Setup a backup http link for Apollo
 const httpLink = new HttpLink({
   uri: `http://localhost:3000/api/graphql`,
 });
 
+// Setup the WebSocket link for Apollo
+// NOTE: to stop Next.js SSR from breaking, we need to check if window is defined
+//  and if not, we use the 'httpLink' instead
 const wsLink =
   typeof window !== 'undefined'
     ? new GraphQLWsLink(
@@ -56,6 +62,7 @@ const wsLink =
       )
     : httpLink;
 
+// Setup the Apollo client for subscriptions
 const subClient = new ApolloClient({
   link: wsLink,
   cache: new InMemoryCache(),
@@ -68,13 +75,14 @@ export default function CustomPage() {
     setTimeRows([...timeRows, row]);
   }
 
-  const { data: postData, loading: postLoading } = useSubscription(PUBLISHED_POST, {
+  // Subscribe to the `postPublished` subscription using the Apollo client created above
+  const { data: postData, loading: postLoading } = useSubscription(POST_PUBLISHED, {
     client: subClient,
     onSubscriptionData: ({ subscriptionData }) => {
       setPostRows([...postRows, JSON.stringify(subscriptionData.data.postPublished)]);
     },
   });
-
+  // Subscribe to the `time` subscription using the Apollo client created above
   const { data, loading } = useSubscription(TIME, {
     client: subClient,
     onSubscriptionData: ({ subscriptionData }) => {
