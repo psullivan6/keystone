@@ -46,7 +46,7 @@ export function addRelationshipData(
               (relationship, data) =>
                 fetchRelationshipData(
                   context,
-                  relationship.modelKey,
+                  relationship.listKey,
                   relationship.many,
                   relationship.selection || '',
                   data

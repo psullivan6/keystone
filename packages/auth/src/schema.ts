@@ -77,7 +77,7 @@ export const getSchemaExtension = ({
     }
     const baseSchema = getBaseAuthSchema({
       identityField,
-      modelKey: listKey,
+      listKey: listKey,
       secretField,
       gqlNames,
       secretFieldImpl: getSecretFieldImpl(base.schema, listKey, secretField),

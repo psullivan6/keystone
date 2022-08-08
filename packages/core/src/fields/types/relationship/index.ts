@@ -124,7 +124,7 @@ export const relationship =
         }
         return {
           refFieldKey: foreignFieldKey,
-          refmodelKey: foreignmodelKey,
+          refListKey: foreignmodelKey,
           many,
           hideCreate: config.ui?.hideCreate ?? false,
           ...(config.ui?.displayMode === 'cards'
@@ -152,7 +152,7 @@ export const relationship =
         `Unable to resolve related model '${foreignmodelKey}' from ${meta.modelKey}.${meta.fieldKey}`
       );
     }
-    const modelTypes = meta.models[foreignmodelKey].types;
+    const listTypes = meta.models[foreignmodelKey].types;
     if (config.many) {
       return fieldType({
         kind: 'relation',
@@ -164,27 +164,27 @@ export const relationship =
         ...commonConfig,
         input: {
           where: {
-            arg: graphql.arg({ type: modelTypes.relateTo.many.where }),
+            arg: graphql.arg({ type: listTypes.relateTo.many.where }),
             resolve(value, context, resolve) {
               return resolve(value);
             },
           },
-          create: modelTypes.relateTo.many.create && {
-            arg: graphql.arg({ type: modelTypes.relateTo.many.create }),
+          create: listTypes.relateTo.many.create && {
+            arg: graphql.arg({ type: listTypes.relateTo.many.create }),
             async resolve(value, context, resolve) {
               return resolve(value);
             },
           },
-          update: modelTypes.relateTo.many.update && {
-            arg: graphql.arg({ type: modelTypes.relateTo.many.update }),
+          update: listTypes.relateTo.many.update && {
+            arg: graphql.arg({ type: listTypes.relateTo.many.update }),
             async resolve(value, context, resolve) {
               return resolve(value);
             },
           },
         },
         output: graphql.field({
-          args: modelTypes.findManyArgs,
-          type: graphql.list(graphql.nonNull(modelTypes.output)),
+          args: listTypes.findManyArgs,
+          type: graphql.list(graphql.nonNull(listTypes.output)),
           resolve({ value }, args) {
             return value.findMany(args);
           },
@@ -193,7 +193,7 @@ export const relationship =
           [`${meta.fieldKey}Count`]: graphql.field({
             type: graphql.Int,
             args: {
-              where: graphql.arg({ type: graphql.nonNull(modelTypes.where), defaultValue: {} }),
+              where: graphql.arg({ type: graphql.nonNull(listTypes.where), defaultValue: {} }),
             },
             resolve({ value }, args) {
               return value.count({
@@ -214,27 +214,27 @@ export const relationship =
       ...commonConfig,
       input: {
         where: {
-          arg: graphql.arg({ type: modelTypes.where }),
+          arg: graphql.arg({ type: listTypes.where }),
           resolve(value, context, resolve) {
             return resolve(value);
           },
         },
-        create: modelTypes.relateTo.one.create && {
-          arg: graphql.arg({ type: modelTypes.relateTo.one.create }),
+        create: listTypes.relateTo.one.create && {
+          arg: graphql.arg({ type: listTypes.relateTo.one.create }),
           async resolve(value, context, resolve) {
             return resolve(value);
           },
         },
 
-        update: modelTypes.relateTo.one.update && {
-          arg: graphql.arg({ type: modelTypes.relateTo.one.update }),
+        update: listTypes.relateTo.one.update && {
+          arg: graphql.arg({ type: listTypes.relateTo.one.update }),
           async resolve(value, context, resolve) {
             return resolve(value);
           },
         },
       },
       output: graphql.field({
-        type: modelTypes.output,
+        type: listTypes.output,
         resolve({ value }) {
           return value();
         },

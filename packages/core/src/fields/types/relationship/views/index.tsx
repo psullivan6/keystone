@@ -81,7 +81,7 @@ export const Field = ({
   forceValidation,
 }: FieldProps<typeof controller>) => {
   const keystone = useKeystone();
-  const foreignModel = useModel(field.refmodelKey);
+  const foreignList = useModel(field.refmodelKey);
   const localModel = useModel(field.modelKey);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -96,7 +96,7 @@ export const Field = ({
           id={value.id}
           value={value}
           onChange={onChange}
-          foreignModel={foreignModel}
+          foreignList={foreignList}
           localModel={localModel}
         />
       </FieldContainer>
@@ -110,8 +110,8 @@ export const Field = ({
         <FieldDescription id={`${field.path}-description`}>{field.description}</FieldDescription>
         <div>
           {value.count === 1
-            ? `There is 1 ${foreignModel.singular} `
-            : `There are ${value.count} ${foreignModel.plural} `}
+            ? `There is 1 ${foreignList.singular} `
+            : `There are ${value.count} ${foreignList.plural} `}
           linked to this {localModel.singular}
         </div>
       </Stack>
@@ -131,7 +131,7 @@ export const Field = ({
             aria-describedby={field.description === null ? undefined : `${field.path}-description`}
             autoFocus={autoFocus}
             isDisabled={onChange === undefined}
-            list={foreignModel}
+            list={foreignList}
             portalMenu
             state={
               value.kind === 'many'
@@ -168,7 +168,7 @@ export const Field = ({
                   setIsDrawerOpen(true);
                 }}
               >
-                Create related {foreignModel.singular}
+                Create related {foreignList.singular}
               </Button>
             )}
             {onChange !== undefined &&
@@ -207,7 +207,7 @@ export const Field = ({
               <LinkToRelatedItems
                 itemId={value.id}
                 refFieldKey={field.refFieldKey}
-                model={foreignModel}
+                model={foreignList}
                 value={value}
               />
             )}
@@ -216,7 +216,7 @@ export const Field = ({
         {onChange !== undefined && (
           <DrawerController isOpen={isDrawerOpen}>
             <CreateItemDrawer
-              modelKey={foreignModel.key}
+              modelKey={foreignList.key}
               onClose={() => {
                 setIsDrawerOpen(false);
               }}
@@ -354,7 +354,7 @@ export const controller = (
   config: FieldControllerConfig<
     {
       refFieldKey?: string;
-      refmodelKey: string;
+      refListKey: string;
       many: boolean;
       hideCreate: boolean;
     } & (
@@ -396,7 +396,7 @@ export const controller = (
     label: config.label,
     description: config.description,
     display: config.fieldMeta.displayMode === 'count' ? 'count' : 'cards-or-select',
-    refmodelKey: config.fieldMeta.refmodelKey,
+    refmodelKey: config.fieldMeta.refListKey,
     graphqlSelection:
       config.fieldMeta.displayMode === 'count'
         ? `${config.path}Count`
@@ -479,7 +479,7 @@ export const controller = (
     },
     filter: {
       Filter: ({ onChange, value }) => {
-        const foreignModel = useModel(config.fieldMeta.refmodelKey);
+        const foreignModel = useModel(config.fieldMeta.refListKey);
         const { filterValues, loading } = useRelationshipFilterValues({
           value,
           list: foreignModel,
@@ -527,7 +527,7 @@ export const controller = (
         };
       },
       Label({ value }) {
-        const foreignModel = useModel(config.fieldMeta.refmodelKey);
+        const foreignModel = useModel(config.fieldMeta.refListKey);
         const { filterValues } = useRelationshipFilterValues({
           value,
           list: foreignModel,

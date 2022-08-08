@@ -18,7 +18,7 @@ const defaultAccess = ({ context }: { context: KeystoneContext }) => !!context.s
 
 function setup(options?: any) {
   const auth = createAuth({
-    model: 'User',
+    listKey: 'User',
     identityField: 'email',
     secretField: 'password',
     sessionData: 'id',
@@ -102,7 +102,7 @@ describe('Auth testing', () => {
 
   test('Fails with useful error when identity field is not unique', async () => {
     const auth = createAuth({
-      model: 'User',
+      listKey: 'User',
       identityField: 'email',
       secretField: 'password',
       sessionData: 'id',

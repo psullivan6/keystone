@@ -13,7 +13,7 @@ const sessionConfig = {
 };
 
 const { withAuth } = createAuth({
-  model: 'Person',
+  listKey: 'Person',
   identityField: 'email',
   secretField: 'password',
   initFirstItem: {

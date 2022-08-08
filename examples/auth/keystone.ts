@@ -16,7 +16,7 @@ let sessionMaxAge = 60 * 60 * 24 * 30; // 30 days
 // management and access control are controlled independently in the main keystone config.
 const { withAuth } = createAuth({
   // This is the list that contains items people can sign in as
-  model: 'User',
+  listKey: 'User',
   // The identity field is typically a username or email address
   identityField: 'email',
   // The secret field must be a password type field

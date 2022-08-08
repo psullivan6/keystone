@@ -17,7 +17,7 @@ if (!sessionSecret) {
 let sessionMaxAge = 60 * 60 * 24 * 30; // 30 days
 
 const auth = createAuth({
-  model: 'User',
+  listKey: 'User',
   identityField: 'email',
   secretField: 'password',
   initFirstItem: {
