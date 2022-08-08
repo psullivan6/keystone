@@ -15,8 +15,11 @@ async function onConnect(
   // @ts-expect-error CreateRequestContext requires `req` and `res` but only `req` is available here
   const context = await createRequestContext(request);
 
-  // TODO
-  console.log('onConnect', !!context);
+  // Check the user is authenticated
+  if (!context.session) {
+    throw new Error('Not authenticated');
+  }
+  console.log('onConnect', !!context.session);
 }
 
 declare global {
@@ -61,7 +64,7 @@ export const extendHttpServer = (
     pubSub.publish('TIME', {
       time: {
         iso: new Date().toISOString(),
-      }
+      },
     });
   }, 1000);
 };
