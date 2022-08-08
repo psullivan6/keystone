@@ -1,6 +1,34 @@
 ## Feature Example - Extend GraphQL Schema to enable subscriptions
 
-This project demonstrates how to extend the GraphQL API provided by Keystone with custom queries, mutations and subscriptions with custom context and authentication. For more information on Subscriptions see https://www.apollographql.com/docs/apollo-server/data/subscriptions
+This example demonstrates how to extend the GraphQL API provided by Keystone to add subscriptions with custom context and authentication. For more information on Subscriptions see https://www.apollographql.com/docs/apollo-server/data/subscriptions
+
+The example has the following two subscriptions setup
+
+### Time
+
+Continuously sends the current time every second
+
+```gql
+subscription Time {
+  time {
+    iso
+  }
+}
+```
+
+### Post Published
+
+This subscription receives a post every time the custom `publishPost` mutation is called.
+
+```gql
+subscription PublishedPost {
+  postPublished {
+    id
+    title
+    publishDate
+  }
+}
+```
 
 ## Instructions
 
@@ -10,30 +38,15 @@ To run this project, clone the Keystone repository locally, run `yarn` at the ro
 yarn dev
 ```
 
-This will start the Admin UI at [localhost:3000](http://localhost:3000).
-You can use the Admin UI to create items in your database.
+This will start the Admin UI at [localhost:3000](http://localhost:3000). Open this link in a browser to create your first user.
 
-You can also access a GraphQL Playground at [localhost:3000/api/graphql](http://localhost:3000/api/graphql), which allows you to directly run GraphQL queries and mutations. To test out subscriptions use [Apollo Studio](https://studio.apollographql.com/sandbox/explorer/), in your connection settings, make sure `Subscription` is set to `ws://localhost:3000/api/graphql` and `Implementation` is `graphql-ws`. You can then subscribe to the `publishedPost` subscription by using the following, make sure you sign in to Keystone first:
+### Subscriptions Page
 
-```gql
-subscription PublishedPost {
-  postPublished {
-    id
-    publishDate
-  }
-}
-```
+Once you have created your first user and a post or two, open the [/subscriptions](http://localhost:3000/subscriptions) in another tab. Here you will see the time feed changing every second in response to the time subscription, as well as an update whenever a post is published.
 
-Running the following mutation, replacing `ID_OF_YOUR_POST` with a valid post id, will then push the post to the subscription
+## Publish a Post
 
-```gql
-mutation PublishPost {
-  publishPost(id: "ID_OF_YOUR_POST") {
-    id
-    publishDate
-  }
-}
-```
+After you create a post, on the post item page there is a button labeled "Publish Post". Clicking this will set the status to `Published` set the `publishDate` to `now()` and send the post to the `postPublished` subscription.
 
 ## Try it out in CodeSandbox 🧪
 
