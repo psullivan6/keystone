@@ -12,7 +12,7 @@ export const initialContent = [
     type: 'paragraph',
     children: [
       {
-        text: 'Here’s just a few things you can do with it:',
+        text: 'Here are just a few things you can do with it:',
       },
     ],
   },
@@ -173,7 +173,7 @@ export const initialContent = [
             type: 'paragraph',
             children: [
               {
-                text: 'They store structured data, and can be inserted (and edited!) anywhere in the document. You can even link them to other items in your database with the ',
+                text: 'They store structured data and can be inserted (and edited!) anywhere in the document. You can even link them to other items in your database with the ',
               },
               {
                 text: 'Relationship',
