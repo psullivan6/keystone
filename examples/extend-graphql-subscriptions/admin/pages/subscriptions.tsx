@@ -36,9 +36,9 @@ const TIME = gql`
 `;
 
 // Setup the Post subscription
-const POST_PUBLISHED = gql`
-  subscription POST_PUBLISHED {
-    postPublished {
+const POST_UPDATED = gql`
+  subscription POST_UPDATED {
+    postUpdated {
       id
       title
       content
@@ -76,10 +76,10 @@ export default function CustomPage() {
   }
 
   // Subscribe to the `postPublished` subscription using the Apollo client created above
-  const { data: postData, loading: postLoading } = useSubscription(POST_PUBLISHED, {
+  const { data: postData, loading: postLoading } = useSubscription(POST_UPDATED, {
     client: subClient,
     onSubscriptionData: ({ subscriptionData }) => {
-      setPostRows([...postRows, JSON.stringify(subscriptionData.data.postPublished)]);
+      setPostRows([...postRows, JSON.stringify(subscriptionData.data.postUpdated)]);
     },
   });
   // Subscribe to the `time` subscription using the Apollo client created above
@@ -109,9 +109,9 @@ export default function CustomPage() {
           </div>
         </div>
         <div className={styles.feed}>
-          <h4>Last Published Post Title</h4>
-          <div>{!postLoading && postData?.postPublished?.title}</div>
-          <h4>Published Post Feed</h4>
+          <h4>Last Updated Post Title</h4>
+          <div>{!postLoading && postData?.postUpdated?.title}</div>
+          <h4>Updated Post Feed</h4>
           <div>
             {postRows.map((row, i) => (
               <div key={i}>{row}</div>

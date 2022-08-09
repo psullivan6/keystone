@@ -8,7 +8,6 @@ type Post {
   content: String
   publishDate: DateTime
   author: Author
-  publish: ID
 }
 
 enum PostStatusType {
@@ -390,5 +389,6 @@ type Time {
 
 type Subscription {
   postPublished: Post
+  postUpdated: Post
   time: Time
 }

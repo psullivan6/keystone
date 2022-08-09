@@ -1,11 +1,19 @@
-import { list, graphQLSchemaExtension, graphql } from '@keystone-6/core';
-import { select, relationship, text, timestamp, password, virtual } from '@keystone-6/core/fields';
+import { list, graphQLSchemaExtension } from '@keystone-6/core';
+import { select, relationship, text, timestamp, password } from '@keystone-6/core/fields';
 import { pubSub } from './websocket';
 
 import type { Lists } from '.keystone/types';
 
 export const lists: Lists = {
   Post: list({
+    hooks: {
+      afterOperation: async ({ item }) => {
+        // publish the new post to the 'POST_UPDATED' channel after it is updated/created
+        pubSub.publish('POST_UPDATED', {
+          postUpdated: item,
+        });
+      },
+    },
     fields: {
       title: text({ validation: { isRequired: true } }),
       status: select({
@@ -17,20 +25,7 @@ export const lists: Lists = {
       }),
       content: text(),
       publishDate: timestamp(),
-
       author: relationship({ ref: 'Author.posts', many: false }),
-      publish: virtual({
-        ui: {
-          views: require.resolve('./fields/publish-post/components.tsx'),
-          listView: { fieldMode: 'hidden' },
-        },
-        field: graphql.field({
-          type: graphql.ID,
-          resolve(item) {
-            return item.id;
-          },
-        }),
-      }),
     },
   }),
 
@@ -57,11 +52,13 @@ export const extendGraphqlSchema = graphQLSchemaExtension({
 
     type Subscription {
       postPublished: Post
+      postUpdated: Post
       time: Time
     }`,
 
   resolvers: {
     Mutation: {
+      // A Custome Mutation to publish a post
       publishPost: async (root, { id }, context) => {
         // we use `context.db.Post`, not `context.query.Post`
         //   as this matches the type needed for GraphQL resolvers
@@ -85,7 +82,10 @@ export const extendGraphqlSchema = graphQLSchemaExtension({
         // @ts-ignore
         subscribe: () => pubSub.asyncIterator(['TIME']),
       },
-
+      postUpdated: {
+        // @ts-ignore
+        subscribe: () => pubSub.asyncIterator(['POST_UPDATED']),
+      },
       postPublished: {
         // @ts-ignore
         subscribe: () => pubSub.asyncIterator(['POST_PUBLISHED']),
